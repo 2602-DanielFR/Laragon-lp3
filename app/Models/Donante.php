@@ -13,6 +13,13 @@ class Donante extends Model
         'user_id',
         'direccion',
         'telefono',
+        'foto_perfil',
+        'biografia_breve',
+        'enlaces_redes',
+    ];
+
+    protected $casts = [
+        'enlaces_redes' => 'array',
     ];
 
     public function user()

@@ -69,6 +69,39 @@
                             </div>
                         </div>
 
+                        <div class="row mb-3">
+                            <label class="col-md-4 col-form-label text-md-end">{{ __('Rol') }}</label>
+
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input @error('role') is-invalid @enderror" type="radio"
+                                        name="role" id="roleDonante" value="Donante" {{ old('role')=='Donante'
+                                        ? 'checked' : '' }} required>
+                                    <label class="form-check-label" for="roleDonante">
+                                        Donante
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input @error('role') is-invalid @enderror" type="radio"
+                                        name="role" id="roleEmprendedor" value="Emprendedor" {{
+                                        old('role')=='Emprendedor' ? 'checked' : '' }} required>
+                                    <label class="form-check-label" for="roleEmprendedor">
+                                        Emprendedor
+                                    </label>
+                                </div>
+
+                                @error('role')
+                                <span class="invalid-feedback d-block" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                                @enderror
+
+                                <small class="text-muted d-block mt-2">Pueden tener ambos roles después; seleccione aquí
+                                    su rol principal.</small>
+                            </div>
+                        </div>
+
                         <div class="row mb-0">
                             <div class="col-md-6 offset-md-4">
                                 <button type="submit" class="btn btn-primary">
