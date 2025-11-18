@@ -34,7 +34,26 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
-
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('proyectos.index') }}">Explorar Proyectos</a>
+                        </li>
+                        @auth
+                        @if(Auth::user()->role == 'Emprendedor')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('emprendedor.dashboard') }}">Mi Dashboard</a>
+                        </li>
+                        @endif
+                        @if(Auth::user()->role == 'Donante')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('donante.donaciones.index') }}">Mis Donaciones</a>
+                        </li>
+                        @endif
+                        @if(Auth::user()->role == 'Admin')
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('admin.dashboard') }}">Admin Dashboard</a>
+                        </li>
+                        @endif
+                        @endauth
                     </ul>
 
                     <!-- Right Side Of Navbar -->
@@ -60,6 +79,9 @@
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{{ route('perfil.show', Auth::user()->id) }}">
+                                    Mi Perfil
+                                </a>
                                 <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
