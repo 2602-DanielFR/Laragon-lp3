@@ -240,4 +240,36 @@
         -->
     </div>
 </div>
+
+<!-- Modal overlay que aparece al entrar -->
+<div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="welcomeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header auth-left">
+        <h5 class="modal-title text-white" id="welcomeModalLabel">Bienvenido</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-2">Gracias por visitar tu historial de donaciones. Aquí puedes revisar tus aportes y crear nuevas donaciones.</p>
+        <p class="small text-muted mb-0">Si deseas apoyar un proyecto ahora, haz clic en "Nueva Donación".</p>
+      </div>
+      <div class="modal-footer">
+        <a href="{{ url('/donaciones/create') }}" class="btn btn-login">Nueva Donación</a>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var modalEl = document.getElementById('welcomeModal');
+        if (modalEl) {
+            var modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    });
+</script>
+@endpush
 @endsection
