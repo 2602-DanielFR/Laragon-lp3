@@ -65,4 +65,33 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountBtns = document.querySelectorAll('.amount-btn');
+    const customInput = document.getElementById('monto');
+    
+    amountBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Remove active class from all buttons
+            amountBtns.forEach(b => {
+                b.classList.remove('border-blue-500', 'bg-blue-50');
+                b.classList.add('border-gray-200');
+            });
+            
+            // Add active class to clicked button
+            this.classList.remove('border-gray-200');
+            this.classList.add('border-blue-500', 'bg-blue-50');
+            
+            // Set input value
+            const amount = this.dataset.amount;
+            if (amount !== 'custom') {
+                customInput.value = amount;
+            } else {
+                customInput.focus();
+            }
+        });
+    });
+});
+</script>
 @endsection

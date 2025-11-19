@@ -1,9 +1,12 @@
-@extends('layouts.app')
+@extends('admin.layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Gestión de Usuarios</h1>
-    <table class="table">
+<div class="admin-title-bar">
+    <h1>Usuarios</h1>
+    <span class="badge bg-primary">Gestión</span>
+</div>
+<div class="table-responsive table-admin mb-4">
+    <table class="table table-hover align-middle mb-0">
         <thead>
             <tr>
                 <th>ID</th>
@@ -19,13 +22,15 @@
                 <td>1</td>
                 <td>Admin User</td>
                 <td>admin@example.com</td>
-                <td>Admin</td>
+                <td><span class="badge badge-role" data-role="Admin">Admin</span></td>
                 <td>
-                    <a href="#" class="btn btn-sm btn-warning">Editar</a>
-                    <form action="#" method="POST" class="d-inline">
+                    <div class="action-group">
+                    <a href="#" class="btn btn-sm btn-secondary">Editar</a>
+                    <form action="#" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-danger">Bloquear</button>
                     </form>
+                    </div>
                 </td>
             </tr>
         </tbody>

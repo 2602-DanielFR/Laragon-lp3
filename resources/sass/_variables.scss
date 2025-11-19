@@ -5,3 +5,19 @@ $body-bg: #f8fafc;
 $font-family-sans-serif: 'Nunito', sans-serif;
 $font-size-base: 0.9rem;
 $line-height-base: 1.6;
+
+// Brand Colors (Admin Theme)
+$primary: #f96854; // Principal
+$secondary: #052d49; // Secundario
+$danger: #dc3545;
+$success: #198754;
+$info: #0dcaf0;
+$warning: #ffc107;
+
+// Optional: subtle backgrounds
+$primary-bg-subtle: #fde5e1;
+$secondary-bg-subtle: #e0ecf5;
+
+// Custom radius & shadow tweaks for a cleaner admin look
+$border-radius: .55rem;
+$box-shadow: 0 0.15rem 0.6rem rgba(5,45,73,.15);

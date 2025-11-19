@@ -1,10 +1,13 @@
-@extends('layouts.app')
+@extends('admin.layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Cola de Revisión de Proyectos</h1>
-    <p>Aquí se listan los proyectos pendientes de aprobación.</p>
-    <table class="table">
+<div class="admin-title-bar">
+    <h1>Revisión de Proyectos</h1>
+    <span class="badge bg-secondary">Pendientes</span>
+</div>
+<p class="text-white-50 mb-3">Listado de proyectos esperando acción. Revisa detalles y aprueba o rechaza.</p>
+<div class="table-responsive table-admin mb-4">
+    <table class="table table-hover align-middle mb-0">
         <thead>
             <tr>
                 <th>ID Proyecto</th>
@@ -22,7 +25,7 @@
                 <td>Juan Emprendedor</td>
                 <td>2025-11-18</td>
                 <td>
-                    <a href="#" class="btn btn-sm btn-info">Revisar</a>
+                    <a href="#" class="btn btn-sm btn-primary">Revisar</a>
                 </td>
             </tr>
         </tbody>
