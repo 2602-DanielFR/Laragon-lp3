@@ -234,4 +234,13 @@
         </div>
     </div>
 </div>
+<style>
+    .home-left{ background: linear-gradient(180deg,#052d49 0%, #044056 100%); }
+    .btn-primary-brand{ background: #f96854; color: #fff; border: none; }
+    .btn-primary-brand:hover{ background: #e65b48; }
+    .btn-outline-secondary-brand{ border: 1px solid #052d49; color: #052d49; background: transparent; }
+    .btn-outline-secondary-brand:hover{ background: rgba(5,45,73,0.06); }
+    .btn-admin{ background: #052d49; color: #fff; border: none; }
+    .btn-admin:hover{ background: #043242; }
+</style>
 @endsection

@@ -15,8 +15,8 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/css/app.css', 'resources/js/app.js'])
-    
+    @vite(['resources/js/app.js'])
+    @vite('resources/css/app.css')
 </head>
 
 <body class="bg-light">
@@ -74,15 +74,15 @@
                         <li class="nav-item dropdown">
                             <a id="navbarDropdown" class="nav-link dropdown-toggle text-white" href="#" role="button"
                                 data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                {{ Auth::user()->name }}
+                                <span class="user-initials">{{ strtoupper(substr(Auth::user()->name ?? '', 0, 1)) }}</span>
+                                <span class="d-none d-md-inline">{{ Auth::user()->name }}</span>
                             </a>
 
                             <div class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="navbarDropdown">
                                 <a class="dropdown-item" href="{{ route('perfil.show', Auth::user()->id) }}">
                                     Mi Perfil
                                 </a>
-                                <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
+                                <a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     {{ __('Logout') }}
                                 </a>
 
