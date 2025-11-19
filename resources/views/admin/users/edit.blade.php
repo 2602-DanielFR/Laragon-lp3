@@ -1,9 +1,13 @@
-@extends('layouts.app')
+@extends('admin.layouts.app')
 
 @section('content')
-<div class="container">
+<div class="admin-title-bar">
     <h1>Editar Usuario</h1>
-    <form action="#" method="POST">
+    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Volver</a>
+</div>
+<div class="card admin-card mb-4">
+    <div class="card-body">
+    <form action="#" method="POST" class="needs-validation" novalidate>
         @csrf
         @method('PUT')
         <div class="mb-3">
@@ -22,7 +26,10 @@
                 <option value="Emprendedor">Emprendedor</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-primary">Actualizar Usuario</button>
+        <div class="d-flex justify-content-end gap-2">
+            <button type="submit" class="btn btn-primary px-4">Actualizar Usuario</button>
+        </div>
     </form>
+    </div>
 </div>
 @endsection
