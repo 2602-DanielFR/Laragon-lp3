@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Panel Admin - @yield('title','Dashboard')</title>
-    @vite(['resources/sass/admin.scss','resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/sass/admin.scss','resources/js/app.js'])
 </head>
 <body class="admin-body">
 <nav class="navbar navbar-expand-lg navbar-dark navbar-admin">
