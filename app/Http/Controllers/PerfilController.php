@@ -38,7 +38,7 @@ class PerfilController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::with(['donante', 'emprendedor'])->findOrFail($id);
+        $user = User::with(['donante', 'emprendedor', 'socialLinks'])->findOrFail($id);
 
         $profile = null;
         if ($user->role === 'Donante') {
@@ -56,7 +56,7 @@ class PerfilController extends Controller
     public function edit()
     {
         $auth = Auth::user();
-        $user = User::with(['donante', 'emprendedor'])->findOrFail($auth->id);
+        $user = User::with(['donante', 'emprendedor', 'socialLinks'])->findOrFail($auth->id);
 
         $profile = null;
         if ($user->role === 'Donante') {
@@ -79,7 +79,9 @@ class PerfilController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'foto_perfil' => ['nullable', 'string', 'max:2048'],
             'biografia_breve' => ['nullable', 'string', 'max:2000'],
-            'enlaces_redes' => ['nullable', 'array'],
+            'social_links' => ['nullable', 'array'],
+            'social_links.*.platform' => ['required', 'string', 'max:50'],
+            'social_links.*.url' => ['required', 'url', 'max:255'],
         ];
 
         if ($user->role === 'Donante') {
@@ -100,11 +102,24 @@ class PerfilController extends Controller
         $user->name = $data['name'];
         $user->save();
 
+        // Handle Social Links
+        // Sync strategy: delete all and recreate (simple and effective for this scale)
+        $user->socialLinks()->delete();
+        if (isset($data['social_links'])) {
+            foreach ($data['social_links'] as $link) {
+                if (!empty($link['url'])) {
+                    $user->socialLinks()->create([
+                        'platform' => $link['platform'],
+                        'url' => $link['url']
+                    ]);
+                }
+            }
+        }
+
         // Prepare related data
         $relatedData = [
             'foto_perfil' => $data['foto_perfil'] ?? null,
             'biografia_breve' => $data['biografia_breve'] ?? null,
-            'enlaces_redes' => $data['enlaces_redes'] ?? null,
         ];
 
         if ($user->role === 'Donante') {

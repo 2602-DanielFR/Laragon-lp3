@@ -77,11 +77,50 @@
                                         @error('biografia_breve') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
 
-                                    <div class="col-span-6">
-                                        <label for="enlaces_redes" class="block text-sm font-medium text-gray-700">Enlaces de Redes (JSON Array)</label>
-                                        <input type="text" name="enlaces_redes" id="enlaces_redes" value="{{ old('enlaces_redes', optional($profile)->enlaces_redes ? json_encode(optional($profile)->enlaces_redes) : '') }}" class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                        <p class="mt-2 text-sm text-gray-500">Ejemplo: ["https://twitter.com/usuario", "https://linkedin.com/in/usuario"]</p>
-                                        @error('enlaces_redes') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    <div class="col-span-6" x-data="{
+                                        links: {{ $user->socialLinks->map(fn($l) => ['platform' => $l->platform, 'url' => $l->url])->toJson() }},
+                                        init() {
+                                            if (this.links.length === 0) {
+                                                this.addLink();
+                                            }
+                                        },
+                                        addLink() {
+                                            this.links.push({ platform: 'Web', url: '' }); // Default to 'Web'
+                                        },
+                                        removeLink(index) {
+                                            this.links.splice(index, 1);
+                                        }
+                                    }" x-init="init()">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Redes Sociales</label>
+                                        
+                                        <template x-for="(link, index) in links" :key="index">
+                                            <div class="flex gap-3 mb-2">
+                                                <div class="w-1/3">
+                                                    <select :name="'social_links['+index+'][platform]'" x-model="link.platform" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-principal focus:border-principal sm:text-sm">
+                                                        <option value="Web">Sitio Web</option>
+                                                        <option value="Twitter">Twitter / X</option>
+                                                        <option value="Facebook">Facebook</option>
+                                                        <option value="LinkedIn">LinkedIn</option>
+                                                        <option value="Instagram">Instagram</option>
+                                                        <option value="GitHub">GitHub</option>
+                                                        <option value="YouTube">YouTube</option>
+                                                    </select>
+                                                </div>
+                                                <div class="w-2/3 flex gap-2">
+                                                    <input type="url" :name="'social_links['+index+'][url]'" x-model="link.url" placeholder="https://..." class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                                    <button type="button" @click="removeLink(index)" class="mt-1 inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <button type="button" @click="addLink()" class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-principal">
+                                            <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                            Agregar Red Social
+                                        </button>
+                                        
+                                        @error('social_links') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
 
                                     {{-- Role Specific Fields --}}
