@@ -53,13 +53,9 @@ class PerfilController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit()
     {
         $auth = Auth::user();
-        if ((int) $id !== $auth->id) {
-            abort(403);
-        }
-
         $user = User::with(['donante', 'emprendedor'])->findOrFail($auth->id);
 
         $profile = null;
@@ -75,14 +71,9 @@ class PerfilController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
-        $auth = Auth::user();
-        if ((int) $id !== $auth->id) {
-            abort(403);
-        }
-
-        $user = $auth;
+        $user = Auth::user();
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
@@ -134,7 +125,7 @@ class PerfilController extends Controller
             );
         }
 
-        return redirect()->route('perfil.edit', $user->id)->with('status', 'Perfil actualizado.');
+        return redirect()->route('perfil.edit')->with('status', 'Perfil actualizado.');
     }
 
     /**
