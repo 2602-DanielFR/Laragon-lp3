@@ -20,9 +20,11 @@ Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-// Profile resource routes (only show, edit, update). Protected by auth.
+// Profile routes
 Route::middleware('auth')->group(function () {
-    Route::resource('perfil', PerfilController::class)->only(['show', 'edit', 'update']);
+    Route::get('/perfil/editar', [PerfilController::class, 'edit'])->name('perfil.edit');
+    Route::put('/perfil/actualizar', [PerfilController::class, 'update'])->name('perfil.update');
+    Route::get('/perfil/{id}', [PerfilController::class, 'show'])->name('perfil.show');
 });
 
 // Emprendedor Dashboard
