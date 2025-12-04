@@ -35,6 +35,8 @@ Route::middleware(['auth'])->group(function () {
 // Proyectos (Emprendedor)
 Route::middleware(['auth'])->group(function () {
     Route::get('/proyectos/create', [ProyectoController::class, 'create'])->name('proyectos.create');
+    // Route to store a new proyecto (form submits here)
+    Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
     Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
 });
 

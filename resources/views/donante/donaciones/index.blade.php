@@ -1,99 +1,228 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    :root{ --brand-primary:#f96854; --brand-secondary:#052d49; --muted:#6c757d }
-    .donor-page{ padding:40px 12px; display:flex; justify-content:center }
-    .donor-panel{ width:100%; max-width:980px }
-    .header-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px }
-    .panel-card{ background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(5,45,73,0.06); overflow:hidden }
-    .panel-top{ padding:18px 20px; display:flex; align-items:center; gap:16px }
-    .brand-badge{ width:62px; height:62px; border-radius:10px; background:linear-gradient(135deg,var(--brand-primary), #ff7a62); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:800; font-size:18px }
-    .panel-title{ font-size:1.1rem; font-weight:800; color:var(--brand-secondary) }
-    .panel-sub{ color:var(--muted); font-size:.92rem }
-    .stats{ display:flex; gap:12px; align-items:center }
-    .stat{ background:linear-gradient(180deg,#fff,#fff); padding:8px 12px; border-radius:999px; border:1px solid rgba(5,45,73,0.04); font-weight:700 }
-    .controls{ display:flex; gap:10px; align-items:center }
-    .search{ border-radius:999px; padding:6px 12px; border:1px solid rgba(0,0,0,0.06); min-width:200px }
-    .cta-new{ background:var(--brand-primary); color:#fff; padding:8px 14px; border-radius:999px; font-weight:700; text-decoration:none }
-    .donations-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; padding:12px }
-    .donation-card{ background:#fff; border-radius:10px; padding:12px; display:flex; gap:12px; align-items:center; border:1px solid rgba(5,45,73,0.03) }
-    .thumb{ width:64px; height:64px; border-radius:8px; object-fit:cover; flex-shrink:0 }
-    .d-info{ flex:1 }
-    .d-title{ font-weight:800; color:var(--brand-secondary); margin-bottom:6px }
-    .d-meta{ color:var(--muted); font-size:.86rem }
-    .d-amount{ font-weight:900; color:var(--brand-primary); font-size:1rem }
-    .empty-box{ text-align:center; padding:28px; color:var(--muted) }
-    @media (max-width:600px){ .brand-badge{ width:48px; height:48px; font-size:16px } .thumb{ width:56px; height:56px } }
-</style>
-
-<div class="donor-page">
-    <div class="donor-panel">
-        <div class="header-row">
-            <div>
-                <div class="panel-title">Mi Historial de Donaciones</div>
-                <div class="panel-sub">Revisa tus aportes y vuelve a apoyar proyectos que te importan</div>
-            </div>
-
-                <div class="controls">
-                <div class="stats">
-                    <div class="stat">Total: S/{{ number_format(collect($donations ?? [])->sum('amount'),2) }}</div>
-                    <div class="stat">{{ count($donations ?? []) }} donación(es)</div>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Welcome Header -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">¡Hola, {{ Auth::user()->name }}! 👋</h1>
+                        <p class="text-blue-100 text-lg">Gracias por apoyar proyectos que generan impacto</p>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <span class="text-white font-bold">D</span>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('proyectos.index') }}" class="cta-new">Nueva Donación</a>
             </div>
         </div>
 
-        <div class="panel-card">
-            <div class="panel-top">
-                <div style="display:flex;align-items:center;gap:12px">
-                    <div class="brand-badge">S/</div>
-                    <div>
-                        <div class="panel-title">Resumen</div>
-                        <div class="panel-sub">Tu historial y recibos recientes</div>
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"></path>
+                        </svg>
                     </div>
-                </div>
-                <div style="margin-left:auto; display:flex; gap:10px; align-items:center">
-                    <input class="search" placeholder="Buscar por proyecto o fecha" style="outline:none">
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Total Donado</p>
+                        <p class="text-2xl font-bold text-gray-900">S/{{ number_format(collect($donations ?? [])->sum('amount'),2) }}</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="donations-grid">
-                @forelse($donations ?? [] as $donation)
-                    <div class="donation-card">
-                        <img src="{{ $donation->project->thumbnail_url ?? asset('images/project-placeholder.jpg') }}" alt="thumb" class="thumb">
-                        <div class="d-info">
-                            <a href="{{ url('proyectos/'.$donation->project->id) }}" class="d-title">{{ $donation->project->title ?? 'Proyecto' }}</a>
-                            <div class="d-meta">{{ $donation->created_at->format('d M, Y') }} · <span class="badge" style="background:var(--brand-secondary); color:#fff; border-radius:8px; padding:4px 8px; font-size:.76rem">{{ $donation->project->status ?? 'Activo' }}</span></div>
-                        </div>
-                        <div style="text-align:right">
-                            <div class="d-amount">S/{{ number_format($donation->amount,2) }}</div>
-                            <div class="d-meta">{{ $donation->type ?? 'Donación' }}</div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Donaciones</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ count($donations ?? []) }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Proyectos Apoyados</p>
+                        <p class="text-2xl font-bold text-gray-900">{{ collect($donations ?? [])->pluck('project.id')->unique()->count() }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm text-gray-500">Última Donación</p>
+                        <p class="text-2xl font-bold text-gray-900">@if(count($donations ?? []) > 0) {{ optional(collect($donations)->first())->created_at->diffForHumans() }} @else - @endif</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left Column -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <a href="{{ route('proyectos.index') }}" 
+                           class="flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group">
+                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-medium text-gray-900">Explorar Proyectos</p>
+                                <p class="text-sm text-gray-500">Encuentra nuevas causas para apoyar</p>
+                            </div>
+                        </a>
+
+                        <a href="#" 
+                           class="flex items-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors group">
+                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200">
+                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-4">
+                                <p class="font-medium text-gray-900">Ver Recibos</p>
+                                <p class="text-sm text-gray-500">Descarga tus comprobantes</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- My Donations / Recent -->
+                <div class="bg-white rounded-lg shadow-md">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-gray-900">Mis Donaciones</h3>
+                            <a href="{{ route('proyectos.index') }}" 
+                               class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                                Donar de Nuevo
+                            </a>
                         </div>
                     </div>
-                @empty
-                    <div class="empty-box" style="grid-column:1/-1">
-                        <h5>No has realizado donaciones todavía</h5>
-                        <p class="panel-sub">Explora proyectos y realiza tu primera contribución para empezar a generar impacto.</p>
-                        <div style="margin-top:12px"><a href="{{ url('/proyectos') }}" class="cta-new">Explorar Proyectos</a></div>
+
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @forelse($donations ?? [] as $donation)
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                                    <span class="text-white font-bold text-sm">{{ strtoupper(substr(optional($donation->project)->title ?? 'PR',0,2)) }}</span>
+                                                </div>
+                                                <div>
+                                                    <h4 class="text-lg font-medium text-gray-900">{{ optional($donation->project)->title ?? 'Proyecto' }}</h4>
+                                                    <p class="text-sm text-gray-500">Donado {{ $donation->created_at->diffForHumans() }}</p>
+                                                </div>
+                                            </div>
+                                            <p class="text-gray-600 mt-2 text-sm">{{ optional($donation->project)->short_description ?? '' }}</p>
+                                            <div class="mt-4">
+                                                <div class="flex justify-between text-sm text-gray-600 mb-1">
+                                                    <span>S/{{ number_format($donation->amount,2) }} donado</span>
+                                                    <span>{{ optional($donation->project)->status ?? 'Activo' }}</span>
+                                                </div>
+                                                <div class="bg-gray-200 rounded-full h-2">
+                                                    @php
+                                                        $progress = optional($donation->project)->meta ? intval((optional($donation->project)->recaudado ?? 0) / (optional($donation->project)->meta ?: 1) * 100) : 0;
+                                                        $progress = max(0, min(100, $progress));
+                                                    @endphp
+                                                    <div class="bg-gradient-to-r from-indigo-500 to-pink-500 h-2 rounded-full" style="width: {{ $progress }}%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-center space-x-2 ml-4">
+                                            <a href="{{ route('proyectos.show', optional($donation->project)->id) }}" class="text-gray-400 hover:text-gray-600">Ver</a>
+                                            <a href="{{ route('donaciones.create', optional($donation->project)->id) }}" class="text-gray-400 hover:text-gray-600">Donar</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-8">
+                                    <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16"></path>
+                                    </svg>
+                                    <h3 class="mt-2 text-lg font-medium text-gray-900">No has realizado donaciones aún</h3>
+                                    <p class="mt-1 text-gray-500">Explora proyectos y realiza tu primera contribución para empezar a generar impacto.</p>
+                                    <div class="mt-6">
+                                        <a href="{{ route('proyectos.index') }}" 
+                                           class="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                                            Explorar Proyectos
+                                        </a>
+                                    </div>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
-                @endforelse
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="space-y-6">
+                <!-- Recent Activity -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
+                    <div class="space-y-4">
+                        @foreach(collect($donations ?? [])->take(3) as $d)
+                            <div class="flex items-start space-x-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-900">Donación de S/{{ number_format($d->amount,2) }}</p>
+                                    <p class="text-xs text-gray-500">Para "{{ optional($d->project)->title }}" - {{ $d->created_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <!-- Tips & Resources -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Consejos para Donantes</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-blue-50 rounded-lg">
+                            <h4 class="font-medium text-blue-900 mb-2">💡 Sigue proyectos</h4>
+                            <p class="text-sm text-blue-800">Sigue proyectos que te interesen para recibir actualizaciones y reportes.</p>
+                        </div>
+
+                        <div class="p-4 bg-green-50 rounded-lg">
+                            <h4 class="font-medium text-green-900 mb-2">🔒 Revisa la información</h4>
+                            <p class="text-sm text-green-800">Verifica la descripción y uso de fondos antes de donar.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var modalEl = document.getElementById('welcomeModal');
-        if (modalEl && !sessionStorage.getItem('donor_welcome_shown')){
-            var modal = new bootstrap.Modal(modalEl);
-            modal.show();
-            sessionStorage.setItem('donor_welcome_shown','1');
-        }
-    });
-</script>
-@endpush
-
 @endsection

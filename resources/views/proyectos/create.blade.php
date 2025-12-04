@@ -17,7 +17,7 @@
                 <small class="text-muted">Completa los datos para publicar tu proyecto</small>
             </div>
 
-            <form action="#" method="POST">
+            <form action="{{ route('proyectos.store') }}" method="POST">
                 @csrf
 
                 <div class="mb-3">
