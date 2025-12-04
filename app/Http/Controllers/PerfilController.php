@@ -6,44 +6,20 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
-
 class PerfilController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display the authenticated user's profile.
+     * NO requiere parámetro, usa auth()->user()
      */
-    public function index()
+    public function show()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        $user = User::with(['donante', 'emprendedor', 'socialLinks'])->findOrFail($id);
+        $user = Auth::user()->load(['donante', 'emprendedor', 'socialLinks']);
 
         $profile = null;
-        if ($user->role === 'Donante') {
+        if ($user->isDonante()) {
             $profile = $user->donante;
-        } elseif ($user->role === 'Emprendedor') {
+        } elseif ($user->isEmprendedor()) {
             $profile = $user->emprendedor;
         }
 
@@ -51,17 +27,16 @@ class PerfilController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Show the form for editing the authenticated user's profile.
      */
     public function edit()
     {
-        $auth = Auth::user();
-        $user = User::with(['donante', 'emprendedor', 'socialLinks'])->findOrFail($auth->id);
+        $user = Auth::user()->load(['donante', 'emprendedor', 'socialLinks']);
 
         $profile = null;
-        if ($user->role === 'Donante') {
+        if ($user->isDonante()) {
             $profile = $user->donante;
-        } elseif ($user->role === 'Emprendedor') {
+        } elseif ($user->isEmprendedor()) {
             $profile = $user->emprendedor;
         }
 
@@ -69,27 +44,31 @@ class PerfilController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the authenticated user's profile.
      */
     public function update(Request $request)
     {
         $user = Auth::user();
 
+        // Validación base para todos los usuarios
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'foto_perfil' => ['nullable', 'string', 'max:2048'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'foto_perfil' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'],
             'biografia_breve' => ['nullable', 'string', 'max:2000'],
-            'social_links' => ['nullable', 'array'],
-            'social_links.*.platform' => ['required', 'string', 'max:50'],
-            'social_links.*.url' => ['required', 'url', 'max:255'],
+            'social_links' => ['nullable', 'array', 'max:5'],
+            'social_links.*.platform' => ['required_with:social_links', 'string', 'max:50'],
+            'social_links.*.url' => ['required_with:social_links', 'url', 'max:255'],
         ];
 
-        if ($user->role === 'Donante') {
+        // Validaciones específicas por rol
+        if ($user->isDonante()) {
             $rules = array_merge($rules, [
+                'organizacion' => ['nullable', 'string', 'max:255'],
                 'direccion' => ['nullable', 'string', 'max:255'],
-                'telefono' => ['nullable', 'string', 'max:50'],
+                'telefono' => ['nullable', 'string', 'max:20'],
             ]);
-        } elseif ($user->role === 'Emprendedor') {
+        } elseif ($user->isEmprendedor()) {
             $rules = array_merge($rules, [
                 'organizacion' => ['nullable', 'string', 'max:255'],
                 'descripcion_personal' => ['nullable', 'string', 'max:2000'],
@@ -98,16 +77,16 @@ class PerfilController extends Controller
 
         $data = $request->validate($rules);
 
-        // Update User
+        // ===== ACTUALIZAR USUARIO =====
         $user->name = $data['name'];
+        $user->email = $data['email'];
         $user->save();
 
-        // Handle Social Links
-        // Sync strategy: delete all and recreate (simple and effective for this scale)
+        // ===== ACTUALIZAR ENLACES SOCIALES =====
         $user->socialLinks()->delete();
-        if (isset($data['social_links'])) {
+        if (!empty($data['social_links'])) {
             foreach ($data['social_links'] as $link) {
-                if (!empty($link['url'])) {
+                if (!empty($link['platform']) && !empty($link['url'])) {
                     $user->socialLinks()->create([
                         'platform' => $link['platform'],
                         'url' => $link['url']
@@ -116,13 +95,14 @@ class PerfilController extends Controller
             }
         }
 
-        // Prepare related data
+        // ===== ACTUALIZAR PERFIL RELACIONADO =====
         $relatedData = [
             'foto_perfil' => $data['foto_perfil'] ?? null,
             'biografia_breve' => $data['biografia_breve'] ?? null,
         ];
 
-        if ($user->role === 'Donante') {
+        if ($user->isDonante()) {
+            $relatedData['organizacion'] = $data['organizacion'] ?? null;
             $relatedData['direccion'] = $data['direccion'] ?? null;
             $relatedData['telefono'] = $data['telefono'] ?? null;
 
@@ -130,7 +110,7 @@ class PerfilController extends Controller
                 ['user_id' => $user->id],
                 $relatedData
             );
-        } elseif ($user->role === 'Emprendedor') {
+        } elseif ($user->isEmprendedor()) {
             $relatedData['organizacion'] = $data['organizacion'] ?? null;
             $relatedData['descripcion_personal'] = $data['descripcion_personal'] ?? null;
 
@@ -140,14 +120,6 @@ class PerfilController extends Controller
             );
         }
 
-        return redirect()->route('perfil.edit')->with('status', 'Perfil actualizado.');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('perfil.edit')->with('success', 'Perfil actualizado correctamente.');
     }
 }
