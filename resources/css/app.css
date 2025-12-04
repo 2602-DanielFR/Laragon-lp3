@@ -9,10 +9,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Colores personalizados como variables CSS */
+/* 
+   IMPORTANTE: Este archivo está siendo compilado por Vite
+   No mezclar imports aquí si ya usamos @vite en Blade
+*/
+
+/* Variables CSS personalizadas */
 :root {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
     --color-principal: #f96854;
     --color-secundario: #052d49;
+    --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Estilos base sin conflictos */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: #ffffff;
+    color: #333333;
+}
+
+/* Remover estilos por defecto que podrían causar conflictos */
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul, ol {
+    list-style: none;
 }
