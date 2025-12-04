@@ -37,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Admin Dashboard & Routes
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () { // Assuming an 'admin' middleware will be created
+Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Categories
@@ -46,6 +46,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // Project Review
     Route::get('/proyectos', [AdminProyectoController::class, 'index'])->name('proyectos.index');
     Route::get('/proyectos/{id}', [AdminProyectoController::class, 'show'])->name('proyectos.show');
+    
+    // Project Actions
+    Route::post('/proyectos/{id}/aprobar', [AdminProyectoController::class, 'aprobar'])->name('proyectos.aprobar');
+    Route::post('/proyectos/{id}/rechazar', [AdminProyectoController::class, 'rechazar'])->name('proyectos.rechazar');
+    Route::post('/proyectos/{id}/revertir', [AdminProyectoController::class, 'revertir'])->name('proyectos.revertir');
 
     // User Management
     Route::resource('users', AdminUserController::class)->except(['create', 'store', 'show']);
