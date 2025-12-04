@@ -8,20 +8,12 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
+     *
+     * Todas las columnas necesarias ya están en las migraciones de creación.
      */
     public function up(): void
     {
-        Schema::table('donantes', function (Blueprint $table) {
-            $table->string('foto_perfil')->nullable()->after('telefono');
-            $table->text('biografia_breve')->nullable()->after('foto_perfil');
-            $table->json('enlaces_redes')->nullable()->after('biografia_breve');
-        });
-
-        Schema::table('emprendedores', function (Blueprint $table) {
-            $table->string('foto_perfil')->nullable()->after('organizacion');
-            $table->text('biografia_breve')->nullable()->after('foto_perfil');
-            $table->json('enlaces_redes')->nullable()->after('biografia_breve');
-        });
+        // No hay nada que hacer aquí
     }
 
     /**
@@ -29,12 +21,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('donantes', function (Blueprint $table) {
-            $table->dropColumn(['foto_perfil', 'biografia_breve', 'enlaces_redes']);
-        });
-
-        Schema::table('emprendedores', function (Blueprint $table) {
-            $table->dropColumn(['foto_perfil', 'biografia_breve', 'enlaces_redes']);
-        });
+        // No hay nada que revertir
     }
 };

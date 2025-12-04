@@ -33,13 +33,13 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // Proyectos (Emprendedor)
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified', 'emprendedor'])->group(function () {
     Route::get('/proyectos/create', [ProyectoController::class, 'create'])->name('proyectos.create');
     Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
 });
 
 // Admin Dashboard & Routes
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Categories
@@ -64,7 +64,7 @@ Route::get('/proyectos/{id}', [ProyectoController::class, 'show'])->name('proyec
 
 
 // Donante Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified', 'donante'])->group(function () {
     // Donation Process
     Route::get('/proyectos/{id}/donar', [DonacionController::class, 'create'])->name('donaciones.create');
 
