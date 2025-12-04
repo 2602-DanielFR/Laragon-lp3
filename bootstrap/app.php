@@ -4,7 +4,6 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,11 +12,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // ===== ALIAS DE MIDDLEWARES (Route Middleware) =====
+        // ===== ALIAS DE MIDDLEWARES =====
         $middleware->alias([
+            // Middlewares de roles personalizados
             'admin' => \App\Http\Middleware\Admin::class,
             'donante' => \App\Http\Middleware\Donante::class,
             'emprendedor' => \App\Http\Middleware\Emprendedor::class,
+            
+            // Middlewares de autenticación
             'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
             'auth.session' => \Illuminate\Session\Middleware\AuthenticateSession::class,
             'cache.headers' => \Illuminate\Http\Middleware\SetCacheHeaders::class,
@@ -28,16 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
             'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         ]);
-
-        // ===== MIDDLEWARES GLOBALES (aplican a todas las rutas) =====
-        $middleware->web([
-            // Los middlewares web se cargan automáticamente
-        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Manejo de excepciones personalizadas
-        $exceptions->render(function (NotFoundHttpException $e) {
-            // Aquí puedes personalizar la vista 404
-        });
+        //
     })
     ->create();
