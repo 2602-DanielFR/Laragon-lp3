@@ -1,76 +1,70 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\ConfirmablePasswordController;
-use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Http\Controllers\Auth\EmailVerificationPromptController;
-use App\Http\Controllers\Auth\NewPasswordController;
-use App\Http\Controllers\Auth\PasswordController;
-use App\Http\Controllers\Auth\PasswordResetLinkController;
-use App\Http\Controllers\Auth\RegisteredUserController;
-use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProyectoController;
+use App\Http\Controllers\PerfilController;
+use App\Http\Controllers\DonacionController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\CategoriaController as AdminCategoriaController;
+use App\Http\Controllers\Admin\ProyectoController as AdminProyectoController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\Emprendedor\DashboardController as EmprendedorDashboardController;
+use App\Http\Controllers\Donante\DashboardController as DonanteDashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-
+// ===== HOME =====
 Route::get('/', function () {
     return view('home');
-});
+})->name('home');
 
+// ===== AUTENTICACIÓN =====
 Auth::routes();
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-// Profile routes
+// ===== RUTAS PROTEGIDAS (AUTENTICADAS) =====
 Route::middleware('auth')->group(function () {
+    // Perfil - SIN {id}
+    Route::get('/perfil', [PerfilController::class, 'show'])->name('perfil.show');
     Route::get('/perfil/editar', [PerfilController::class, 'edit'])->name('perfil.edit');
     Route::put('/perfil/actualizar', [PerfilController::class, 'update'])->name('perfil.update');
-    Route::get('/perfil/{id}', [PerfilController::class, 'show'])->name('perfil.show');
 });
 
-// Emprendedor Dashboard
-Route::middleware(['auth'])->group(function () {
-    Route::get('/emprendedor/dashboard', [EmprendedorDashboardController::class, 'index'])->name('emprendedor.dashboard');
-});
+// ===== RUTAS PÚBLICAS =====
+Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
+Route::get('/proyectos/{id}', [ProyectoController::class, 'show'])->name('proyectos.show');
 
-// Proyectos (Emprendedor)
+// ===== RUTAS EMPRENDEDOR =====
 Route::middleware(['auth', 'verified', 'emprendedor'])->group(function () {
+    Route::get('/emprendedor/dashboard', [EmprendedorDashboardController::class, 'index'])->name('emprendedor.dashboard');
     Route::get('/proyectos/create', [ProyectoController::class, 'create'])->name('proyectos.create');
     Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
     Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
     Route::put('/proyectos/{id}', [ProyectoController::class, 'update'])->name('proyectos.update');
-    Route::delete('/proyectos/{id}', [ProyectoController::class, 'destroy'])->name('proyectos.destroy');
 });
 
-// Admin Dashboard & Routes
+// ===== RUTAS ADMIN =====
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-    // Categories
+    // Categorías
     Route::resource('categorias', AdminCategoriaController::class)->except(['show']);
 
-    // Project Review & Management
+    // Proyectos
     Route::get('/proyectos', [AdminProyectoController::class, 'index'])->name('proyectos.index');
     Route::get('/proyectos/{id}', [AdminProyectoController::class, 'show'])->name('proyectos.show');
-    
-    // Project Actions
     Route::post('/proyectos/{id}/aprobar', [AdminProyectoController::class, 'aprobar'])->name('proyectos.aprobar');
     Route::post('/proyectos/{id}/rechazar', [AdminProyectoController::class, 'rechazar'])->name('proyectos.rechazar');
     Route::post('/proyectos/{id}/revertir', [AdminProyectoController::class, 'revertir'])->name('proyectos.revertir');
 
-    // User Management
+    // Usuarios
     Route::resource('users', AdminUserController::class)->except(['create', 'store', 'show']);
 });
 
-// Public Project Exploration
-Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
-Route::get('/proyectos/{id}', [ProyectoController::class, 'show'])->name('proyectos.show');
-
-
-// Donante Routes
+// ===== RUTAS DONANTE =====
 Route::middleware(['auth', 'verified', 'donante'])->group(function () {
-    // Donation Process
-    Route::get('/proyectos/{id}/donar', [DonacionController::class, 'create'])->name('donaciones.create');
-
-    // Donation History
+    Route::get('/donante/dashboard', [DonanteDashboardController::class, 'index'])->name('donante.dashboard');
     Route::get('/donante/donaciones', [DonanteDashboardController::class, 'index'])->name('donante.donaciones.index');
+    Route::get('/proyectos/{id}/donar', [DonacionController::class, 'create'])->name('donaciones.create');
+    Route::post('/donaciones', [DonacionController::class, 'store'])->name('donaciones.store');
 });
