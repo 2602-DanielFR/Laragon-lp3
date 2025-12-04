@@ -1,15 +1,15 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\PerfilController;
-use App\Http\Controllers\ProyectoController;
-use App\Http\Controllers\DonacionController;
-use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
-use App\Http\Controllers\Admin\CategoriaController as AdminCategoriaController;
-use App\Http\Controllers\Admin\ProyectoController as AdminProyectoController;
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Emprendedor\DashboardController as EmprendedorDashboardController;
-use App\Http\Controllers\Donante\DashboardController as DonanteDashboardController;
 
 
 Route::get('/', function () {
