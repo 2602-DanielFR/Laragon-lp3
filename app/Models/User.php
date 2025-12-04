@@ -62,4 +62,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(SocialLink::class);
     }
+
+    public function proyectos()
+    {
+        return $this->hasMany(Proyecto::class);
+    }
 }
