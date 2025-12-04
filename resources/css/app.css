@@ -1,56 +1,14 @@
 @import "tailwindcss";
+@config "../../tailwind.config.js";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* 
-   IMPORTANTE: Este archivo está siendo compilado por Vite
-   No mezclar imports aquí si ya usamos @vite en Blade
-*/
-
-/* Variables CSS personalizadas */
+/* Colores personalizados como variables CSS */
 :root {
     --color-principal: #f96854;
     --color-secundario: #052d49;
     --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Estilos base sin conflictos */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    font-family: var(--font-sans);
-    background-color: #ffffff;
-    color: #333333;
-}
-
-/* Remover estilos por defecto que podrían causar conflictos */
-button {
-    border: none;
-    background: none;
-    cursor: pointer;
-    font-family: inherit;
-}
-
-a {
-    text-decoration: none;
-    color: inherit;
-}
-
-ul, ol {
-    list-style: none;
 }

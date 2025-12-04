@@ -1,104 +1,184 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-4">
-    <style>
-        /* Small palette styles local to this view */
-        .btn-login { background: #f96854; border-color: #f96854; color: #fff; }
-        .profile-card { border-radius: .6rem; border:1px solid rgba(0,0,0,0.04); }
-        .profile-thumb { width:120px; height:120px; object-fit:cover; border-radius:8px; }
-        .muted-small { color:#6c757d; font-size:.95rem; }
-    </style>
-
-    <h3 class="mb-3">Editar perfil</h3>
-
-    @if(session('status'))
-    <div class="alert alert-success">{{ session('status') }}</div>
-    @endif
-
-    <div class="row">
-        <div class="col-lg-4 mb-3">
-            <div class="profile-card p-3 text-center">
-                <img id="profilePreview" src="{{ old('foto_perfil', optional($profile)->foto_perfil) ? old('foto_perfil', optional($profile)->foto_perfil) : asset('images/profile-placeholder.png') }}" alt="Foto" class="profile-thumb mb-3">
-                <h5 class="mb-1">{{ $user->name }}</h5>
-                <div class="muted-small mb-2">{{ $user->role }}</div>
-                <p class="small text-muted">{{ Str::limit(old('biografia_breve', optional($profile)->biografia_breve ?? ''), 120) }}</p>
-                <a href="{{ url('/perfil/'.$user->id) }}" class="btn btn-outline-secondary btn-sm">Ver perfil</a>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="md:flex md:items-center md:justify-between mb-6">
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                    Editar Perfil
+                </h2>
             </div>
         </div>
 
-        <div class="col-lg-8">
-            <form method="POST" action="{{ route('perfil.update', $user->id) }}">
-                @csrf
-                @method('PUT')
-
-                <div class="card profile-card p-3 mb-3">
-                    <div class="mb-3">
-                        <label class="form-label">Nombre</label>
-                        <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $user->name) }}" required>
-                        @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+        @if(session('status'))
+            <div class="rounded-md bg-green-50 p-4 mb-6">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Foto de perfil (URL)</label>
-                        <input id="foto_perfil" type="text" name="foto_perfil" class="form-control @error('foto_perfil') is-invalid @enderror" value="{{ old('foto_perfil', optional($profile)->foto_perfil) }}">
-                        @error('foto_perfil') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                        <small class="form-text text-muted">Pega la URL directa de la imagen. Se mostrará una vista previa arriba.</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Biografía breve</label>
-                        <textarea name="biografia_breve" class="form-control @error('biografia_breve') is-invalid @enderror" rows="4">{{ old('biografia_breve', optional($profile)->biografia_breve) }}</textarea>
-                        @error('biografia_breve') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Enlaces de redes (JSON array)</label>
-                        <input type="text" name="enlaces_redes" class="form-control @error('enlaces_redes') is-invalid @enderror" value="{{ old('enlaces_redes', optional($profile)->enlaces_redes ? json_encode(optional($profile)->enlaces_redes) : '') }}">
-                        <small class="form-text text-muted">Ej: ["https://twitter.com/tu","https://github.com/tu"]</small>
-                        @error('enlaces_redes') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    {{-- Role-specific fields (logic preserved) --}}
-                    @if($user->role === 'Donante')
-                    <h5 class="mt-3">Datos Donante</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Dirección</label>
-                        <input type="text" name="direccion" class="form-control @error('direccion') is-invalid @enderror" value="{{ old('direccion', optional($profile)->direccion) }}">
-                        @error('direccion') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Teléfono</label>
-                        <input type="text" name="telefono" class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono', optional($profile)->telefono) }}">
-                        @error('telefono') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    @elseif($user->role === 'Emprendedor')
-                    <h5 class="mt-3">Datos Emprendedor</h5>
-                    <div class="mb-3">
-                        <label class="form-label">Organización</label>
-                        <input type="text" name="organizacion" class="form-control @error('organizacion') is-invalid @enderror" value="{{ old('organizacion', optional($profile)->organizacion) }}">
-                        @error('organizacion') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Descripción personal</label>
-                        <textarea name="descripcion_personal" class="form-control @error('descripcion_personal') is-invalid @enderror" rows="4">{{ old('descripcion_personal', optional($profile)->descripcion_personal) }}</textarea>
-                        @error('descripcion_personal') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                    </div>
-                    @endif
-
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-login">Guardar</button>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-green-800">
+                            {{ session('status') }}
+                        </p>
                     </div>
                 </div>
-            </form>
+            </div>
+        @endif
+
+        <div class="mt-10 sm:mt-0">
+            <div class="md:grid md:grid-cols-3 md:gap-6">
+                <div class="md:col-span-1">
+                    <div class="px-4 sm:px-0">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">Información Personal</h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                            Actualiza tu información pública y detalles de contacto.
+                        </p>
+                        <div class="mt-4 flex justify-center md:justify-start">
+                             <img id="profilePreview" src="{{ old('foto_perfil', optional($profile)->foto_perfil) ? old('foto_perfil', optional($profile)->foto_perfil) : asset('images/profile-placeholder.png') }}" alt="Foto de perfil" class="h-32 w-32 object-cover rounded-lg border border-gray-200 shadow-sm">
+                        </div>
+                        <div class="mt-4 text-center md:text-left">
+                             <a href="{{ route('perfil.show', $user->id) }}" class="text-sm font-medium text-principal hover:text-principal-dark">
+                                Ver cómo ven otros tu perfil &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-5 md:mt-0 md:col-span-2">
+                    <form method="POST" action="{{ route('perfil.update') }}">
+                        @csrf
+                        @method('PUT')
+                        <div class="shadow overflow-hidden sm:rounded-md">
+                            <div class="px-4 py-5 bg-white sm:p-6">
+                                <div class="grid grid-cols-6 gap-6">
+                                    
+                                    <div class="col-span-6 sm:col-span-4">
+                                        <label for="name" class="block text-sm font-medium text-gray-700">Nombre</label>
+                                        <input type="text" name="name" id="name" value="{{ old('name', $user->name) }}" required autocomplete="name" class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        @error('name') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    <div class="col-span-6">
+                                        <label for="foto_perfil" class="block text-sm font-medium text-gray-700">URL de Foto de Perfil</label>
+                                        <input type="text" name="foto_perfil" id="foto_perfil" value="{{ old('foto_perfil', optional($profile)->foto_perfil) }}" class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                        <p class="mt-2 text-sm text-gray-500">Pega la URL directa de tu imagen.</p>
+                                        @error('foto_perfil') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    <div class="col-span-6">
+                                        <label for="biografia_breve" class="block text-sm font-medium text-gray-700">Biografía Breve</label>
+                                        <div class="mt-1">
+                                            <textarea id="biografia_breve" name="biografia_breve" rows="3" class="shadow-sm focus:ring-principal focus:border-principal mt-1 block w-full sm:text-sm border border-gray-300 rounded-md">{{ old('biografia_breve', optional($profile)->biografia_breve) }}</textarea>
+                                        </div>
+                                        <p class="mt-2 text-sm text-gray-500">Cuéntanos un poco sobre ti.</p>
+                                        @error('biografia_breve') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    <div class="col-span-6" x-data="{
+                                        links: {{ $user->socialLinks->map(fn($l) => ['platform' => $l->platform, 'url' => $l->url])->toJson() }},
+                                        init() {
+                                            if (this.links.length === 0) {
+                                                this.addLink();
+                                            }
+                                        },
+                                        addLink() {
+                                            this.links.push({ platform: 'Web', url: '' }); // Default to 'Web'
+                                        },
+                                        removeLink(index) {
+                                            this.links.splice(index, 1);
+                                        }
+                                    }" x-init="init()">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Redes Sociales</label>
+                                        
+                                        <template x-for="(link, index) in links" :key="index">
+                                            <div class="flex gap-3 mb-2">
+                                                <div class="w-1/3">
+                                                    <select :name="'social_links['+index+'][platform]'" x-model="link.platform" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-principal focus:border-principal sm:text-sm">
+                                                        <option value="Web">Sitio Web</option>
+                                                        <option value="Twitter">Twitter / X</option>
+                                                        <option value="Facebook">Facebook</option>
+                                                        <option value="LinkedIn">LinkedIn</option>
+                                                        <option value="Instagram">Instagram</option>
+                                                        <option value="GitHub">GitHub</option>
+                                                        <option value="YouTube">YouTube</option>
+                                                    </select>
+                                                </div>
+                                                <div class="w-2/3 flex gap-2">
+                                                    <input type="url" :name="'social_links['+index+'][url]'" x-model="link.url" placeholder="https://..." class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                                    <button type="button" @click="removeLink(index)" class="mt-1 inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+
+                                        <button type="button" @click="addLink()" class="mt-2 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-principal">
+                                            <svg class="-ml-0.5 mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                            Agregar Red Social
+                                        </button>
+                                        
+                                        @error('social_links') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+
+                                    {{-- Role Specific Fields --}}
+                                    @if($user->role === 'Donante')
+                                        <div class="col-span-6">
+                                            <h4 class="text-md font-medium text-gray-900 mt-4 mb-2 border-b pb-2">Datos de Donante</h4>
+                                        </div>
+                                        
+                                        <div class="col-span-6 sm:col-span-3">
+                                            <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                            <input type="text" name="telefono" id="telefono" value="{{ old('telefono', optional($profile)->telefono) }}" class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                            @error('telefono') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        </div>
+
+                                        <div class="col-span-6">
+                                            <label for="direccion" class="block text-sm font-medium text-gray-700">Dirección</label>
+                                            <input type="text" name="direccion" id="direccion" value="{{ old('direccion', optional($profile)->direccion) }}" class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                            @error('direccion') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        </div>
+
+                                    @elseif($user->role === 'Emprendedor')
+                                        <div class="col-span-6">
+                                            <h4 class="text-md font-medium text-gray-900 mt-4 mb-2 border-b pb-2">Datos de Emprendedor</h4>
+                                        </div>
+
+                                        <div class="col-span-6">
+                                            <label for="organizacion" class="block text-sm font-medium text-gray-700">Organización / Empresa</label>
+                                            <input type="text" name="organizacion" id="organizacion" value="{{ old('organizacion', optional($profile)->organizacion) }}" class="mt-1 focus:ring-principal focus:border-principal block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                                            @error('organizacion') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        </div>
+
+                                        <div class="col-span-6">
+                                            <label for="descripcion_personal" class="block text-sm font-medium text-gray-700">Descripción Personal / Misión</label>
+                                            <div class="mt-1">
+                                                <textarea id="descripcion_personal" name="descripcion_personal" rows="4" class="shadow-sm focus:ring-principal focus:border-principal mt-1 block w-full sm:text-sm border border-gray-300 rounded-md">{{ old('descripcion_personal', optional($profile)->descripcion_personal) }}</textarea>
+                                            </div>
+                                            @error('descripcion_personal') <p class="mt-2 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        </div>
+                                    @endif
+
+                                </div>
+                            </div>
+                            <div class="px-4 py-3 bg-gray-50 text-right sm:px-6">
+                                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-principal hover:bg-principal-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-principal">
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+@endsection
+
 @push('scripts')
 <script>
-    // Preview image URL when the foto_perfil field changes
     document.addEventListener('DOMContentLoaded', function () {
         var input = document.getElementById('foto_perfil');
         var preview = document.getElementById('profilePreview');
@@ -115,4 +195,3 @@
 </script>
 @endpush
 
-@endsection
