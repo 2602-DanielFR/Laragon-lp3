@@ -8,12 +8,16 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * Todas las columnas necesarias ya están en las migraciones de creación.
      */
     public function up(): void
     {
-        // No hay nada que hacer aquí
+        Schema::create('categorias', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre')->unique();
+            $table->string('slug')->unique();
+            $table->text('descripcion')->nullable();
+            $table->timestamps();
+        });
     }
 
     /**
@@ -21,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // No hay nada que revertir
+        Schema::dropIfExists('categorias');
     }
 };

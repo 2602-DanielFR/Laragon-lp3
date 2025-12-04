@@ -13,7 +13,7 @@ use App\Http\Controllers\Donante\DashboardController as DonanteDashboardControll
 
 
 Route::get('/', function () {
-    return redirect()->route('home');
+    return view('home');
 });
 
 Auth::routes();
@@ -32,8 +32,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/emprendedor/dashboard', [EmprendedorDashboardController::class, 'index'])->name('emprendedor.dashboard');
 });
 
-// Proyectos (Emprendedor) - Crear, Editar, Actualizar
-Route::middleware(['auth'])->group(function () {
+// Proyectos (Emprendedor)
+Route::middleware(['auth', 'verified', 'emprendedor'])->group(function () {
     Route::get('/proyectos/create', [ProyectoController::class, 'create'])->name('proyectos.create');
     Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
     Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
@@ -41,8 +41,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/proyectos/{id}', [ProyectoController::class, 'destroy'])->name('proyectos.destroy');
 });
 
-// Admin Routes para Proyectos (Revisión y Aprobación)
-Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () { // Assuming an 'admin' middleware will be created
+// Admin Dashboard & Routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Categories
@@ -51,10 +51,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
     // Project Review & Management
     Route::get('/proyectos', [AdminProyectoController::class, 'index'])->name('proyectos.index');
     Route::get('/proyectos/{id}', [AdminProyectoController::class, 'show'])->name('proyectos.show');
+    
+    // Project Actions
     Route::post('/proyectos/{id}/aprobar', [AdminProyectoController::class, 'aprobar'])->name('proyectos.aprobar');
     Route::post('/proyectos/{id}/rechazar', [AdminProyectoController::class, 'rechazar'])->name('proyectos.rechazar');
-    Route::post('/proyectos/{id}/activar', [AdminProyectoController::class, 'activar'])->name('proyectos.activar');
-    Route::post('/proyectos/{id}/cancelar', [AdminProyectoController::class, 'cancelar'])->name('proyectos.cancelar');
+    Route::post('/proyectos/{id}/revertir', [AdminProyectoController::class, 'revertir'])->name('proyectos.revertir');
 
     // User Management
     Route::resource('users', AdminUserController::class)->except(['create', 'store', 'show']);
@@ -66,7 +67,7 @@ Route::get('/proyectos/{id}', [ProyectoController::class, 'show'])->name('proyec
 
 
 // Donante Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified', 'donante'])->group(function () {
     // Donation Process
     Route::get('/proyectos/{id}/donar', [DonacionController::class, 'create'])->name('donaciones.create');
 

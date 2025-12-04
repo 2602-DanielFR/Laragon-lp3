@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Proyecto;
+use App\Models\Categoria;
 use Illuminate\Http\Request;
 
 class ProyectoController extends Controller
@@ -22,41 +23,47 @@ class ProyectoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Proyecto::with(['user', 'categoria']);
+        $query = Proyecto::with(['emprendedor.user', 'categoria']);
 
-        // Filtrar por estado
-        $estado = $request->get('estado', 'pendiente_revision');
-        if ($estado !== 'todos') {
-            $query->where('estado', $estado);
+        // Filtro por estado
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        // Filtro por categoría
+        if ($request->filled('categoria_id')) {
+            $query->where('categoria_id', $request->categoria_id);
         }
 
         // Búsqueda
-        if ($request->has('buscar') && $request->buscar) {
-            $buscar = $request->buscar;
-            $query->where(function ($q) use ($buscar) {
-                $q->where('titulo', 'LIKE', "%{$buscar}%")
-                  ->orWhere('descripcion', 'LIKE', "%{$buscar}%")
-                  ->orWhereHas('user', function ($q) use ($buscar) {
-                      $q->where('name', 'LIKE', "%{$buscar}%");
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('titulo', 'like', "%{$search}%")
+                  ->orWhere('descripcion', 'like', "%{$search}%")
+                  ->orWhereHas('emprendedor.user', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
                   });
             });
         }
 
         // Ordenamiento
-        $query->orderBy('created_at', 'desc');
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
 
-        $proyectos = $query->paginate(15);
-        $totalPendientes = Proyecto::where('estado', 'pendiente_revision')->count();
-        $totalActivos = Proyecto::where('estado', 'activo')->count();
-        $totalRechazados = Proyecto::where('estado', 'rechazado')->count();
+        $proyectos = $query->paginate(12);
+        $categorias = Categoria::all();
 
-        return view('admin.proyectos.index', compact(
-            'proyectos',
-            'estado',
-            'totalPendientes',
-            'totalActivos',
-            'totalRechazados'
-        ));
+        // Estadísticas
+        $stats = [
+            'total' => Proyecto::count(),
+            'pendientes' => Proyecto::where('estado', 'pendiente')->count(),
+            'aprobados' => Proyecto::where('estado', 'aprobado')->count(),
+            'rechazados' => Proyecto::where('estado', 'rechazado')->count(),
+        ];
+
+        return view('admin.proyectos.index', compact('proyectos', 'categorias', 'stats'));
     }
 
     /**
@@ -64,111 +71,130 @@ class ProyectoController extends Controller
      */
     public function show(string $id)
     {
-        $proyecto = Proyecto::with(['user.emprendedor', 'categoria', 'actualizaciones'])
-                           ->findOrFail($id);
+        $proyecto = Proyecto::with([
+            'emprendedor.user',
+            'categoria',
+            'donaciones.donante.user'
+        ])->findOrFail($id);
 
-        $estadoActual = $proyecto->estado;
+        // Calcular estadísticas del proyecto
+        $totalRecaudado = $proyecto->donaciones->sum('monto');
+        $porcentajeRecaudado = $proyecto->meta_financiamiento > 0 
+            ? ($totalRecaudado / $proyecto->meta_financiamiento) * 100 
+            : 0;
+        $totalDonantes = $proyecto->donaciones->count();
 
-        return view('admin.proyectos.show', compact('proyecto', 'estadoActual'));
+        return view('admin.proyectos.show', compact(
+            'proyecto',
+            'totalRecaudado',
+            'porcentajeRecaudado',
+            'totalDonantes'
+        ));
     }
 
     /**
-     * Aprobar proyecto
+     * Aprobar un proyecto
      */
-    public function aprobar(Request $request, string $id)
+    public function aprobar(string $id)
     {
         $proyecto = Proyecto::findOrFail($id);
 
-        if ($proyecto->estado !== 'pendiente_revision') {
-            return back()->with('error', 'Solo se pueden aprobar proyectos pendientes de revisión');
+        // Validar que el proyecto esté pendiente
+        if ($proyecto->estado !== 'pendiente') {
+            return redirect()
+                ->back()
+                ->with('error', 'Solo se pueden aprobar proyectos en estado pendiente.');
         }
 
         try {
             $proyecto->update([
-                'estado' => 'activo',
-                'fecha_inicio' => now(),
+                'estado' => 'aprobado',
+                'fecha_aprobacion' => now()
             ]);
 
-            return back()->with('success', 'Proyecto aprobado exitosamente');
+            // TODO: Enviar notificación al emprendedor (opcional)
+            // Mail::to($proyecto->emprendedor->user->email)->send(new ProyectoAprobado($proyecto));
+
+            return redirect()
+                ->route('admin.proyectos.show', $proyecto->id)
+                ->with('success', 'Proyecto aprobado exitosamente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al aprobar el proyecto: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error al aprobar el proyecto: ' . $e->getMessage());
         }
     }
 
     /**
-     * Rechazar proyecto
+     * Rechazar un proyecto
      */
     public function rechazar(Request $request, string $id)
     {
-        $validated = $request->validate([
-            'razon_rechazo' => 'required|string|min:10|max:1000',
-        ]);
-
         $proyecto = Proyecto::findOrFail($id);
 
-        if ($proyecto->estado !== 'pendiente_revision') {
-            return back()->with('error', 'Solo se pueden rechazar proyectos pendientes de revisión');
+        // Validar que el proyecto esté pendiente
+        if ($proyecto->estado !== 'pendiente') {
+            return redirect()
+                ->back()
+                ->with('error', 'Solo se pueden rechazar proyectos en estado pendiente.');
         }
+
+        $validated = $request->validate([
+            'motivo_rechazo' => 'required|string|max:1000',
+        ], [
+            'motivo_rechazo.required' => 'Debes proporcionar un motivo de rechazo.',
+            'motivo_rechazo.max' => 'El motivo no puede exceder 1000 caracteres.',
+        ]);
 
         try {
             $proyecto->update([
                 'estado' => 'rechazado',
-                'razon_rechazo' => $validated['razon_rechazo'],
+                'motivo_rechazo' => $validated['motivo_rechazo'],
+                'fecha_rechazo' => now()
             ]);
 
-            return back()->with('success', 'Proyecto rechazado exitosamente');
+            // TODO: Enviar notificación al emprendedor (opcional)
+            // Mail::to($proyecto->emprendedor->user->email)->send(new ProyectoRechazado($proyecto));
+
+            return redirect()
+                ->route('admin.proyectos.index')
+                ->with('success', 'Proyecto rechazado.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al rechazar el proyecto: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error al rechazar el proyecto: ' . $e->getMessage());
         }
     }
 
     /**
-     * Activar proyecto (cambiar estado a activo si está pausado)
+     * Revertir estado a pendiente
      */
-    public function activar(Request $request, string $id)
+    public function revertir(string $id)
     {
         $proyecto = Proyecto::findOrFail($id);
 
-        if (!in_array($proyecto->estado, ['completado', 'cancelado'])) {
-            return back()->with('error', 'Solo se pueden activar proyectos completados o cancelados');
+        // Solo se puede revertir si está aprobado o rechazado
+        if (!in_array($proyecto->estado, ['aprobado', 'rechazado'])) {
+            return redirect()
+                ->back()
+                ->with('error', 'Solo se pueden revertir proyectos aprobados o rechazados.');
         }
 
         try {
             $proyecto->update([
-                'estado' => 'activo',
-                'fecha_fin' => now()->addDays(30),
+                'estado' => 'pendiente',
+                'motivo_rechazo' => null,
+                'fecha_aprobacion' => null,
+                'fecha_rechazo' => null
             ]);
 
-            return back()->with('success', 'Proyecto activado exitosamente');
+            return redirect()
+                ->route('admin.proyectos.show', $proyecto->id)
+                ->with('success', 'El proyecto ha sido revertido a estado pendiente.');
         } catch (\Exception $e) {
-            return back()->with('error', 'Error al activar el proyecto: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Cancelar proyecto
-     */
-    public function cancelar(Request $request, string $id)
-    {
-        $validated = $request->validate([
-            'razon_rechazo' => 'required|string|min:10',
-        ]);
-
-        $proyecto = Proyecto::findOrFail($id);
-
-        if ($proyecto->estado !== 'activo') {
-            return back()->with('error', 'Solo se pueden cancelar proyectos activos');
-        }
-
-        try {
-            $proyecto->update([
-                'estado' => 'cancelado',
-                'razon_rechazo' => $validated['razon_rechazo'],
-            ]);
-
-            return back()->with('success', 'Proyecto cancelado exitosamente');
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al cancelar el proyecto: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Error al revertir el estado: ' . $e->getMessage());
         }
     }
 }
