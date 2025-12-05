@@ -10,10 +10,15 @@ return new class extends Migration
     {
         Schema::create('donantes', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->unique()->onDelete('cascade');
+            $table->text('descripcion_personal')->nullable();
+            $table->string('organizacion')->nullable();
+            $table->string('foto_perfil')->nullable();
+            $table->text('biografia_breve')->nullable();
+            $table->json('enlaces_redes')->nullable();
             $table->string('direccion')->nullable();
             $table->string('telefono')->nullable();
             $table->timestamps();
-            $table->foreignId('user_id')->constrained()->unique()->onDelete('cascade');
         });
     }
 

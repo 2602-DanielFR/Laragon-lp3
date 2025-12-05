@@ -28,6 +28,7 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'role' => 'donante', // Rol por defecto
             'remember_token' => Str::random(10),
         ];
     }
@@ -39,6 +40,69 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Crear un usuario administrador
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'admin',
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Crear un usuario donante
+     */
+    public function donante(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'donante',
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Crear un usuario emprendedor
+     */
+    public function emprendedor(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'emprendedor',
+            'email_verified_at' => now(),
+        ]);
+    }
+
+    /**
+     * Establecer contraseña personalizada
+     */
+    public function withPassword(string $password): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => Hash::make($password),
+        ]);
+    }
+
+    /**
+     * Establecer nombre personalizado
+     */
+    public function withName(string $name): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => $name,
+        ]);
+    }
+
+    /**
+     * Establecer email personalizado
+     */
+    public function withEmail(string $email): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email' => $email,
         ]);
     }
 }

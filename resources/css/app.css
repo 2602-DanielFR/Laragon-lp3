@@ -8,8 +8,7 @@
 
 /* Colores personalizados como variables CSS */
 :root {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
     --color-principal: #f96854;
     --color-secundario: #052d49;
+    --font-sans: 'Nunito', ui-sans-serif, system-ui, sans-serif;
 }
