@@ -60,12 +60,7 @@ class ProyectoController extends Controller
      */
     public function create()
     {
-        // Verificar que el usuario tenga perfil de emprendedor
-        if (!auth()->user()->emprendedor) {
-            return redirect()->route('emprendedor.dashboard')
-                           ->with('error', 'Debe completar su perfil de emprendedor primero');
-        }
-
+        // Verificar que el usuario tenga rol de emprendedor (ya está validado por middleware)
         $categorias = Categoria::all();
         return view('proyectos.create', compact('categorias'));
     }

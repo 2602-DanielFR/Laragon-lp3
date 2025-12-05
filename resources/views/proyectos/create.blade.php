@@ -208,25 +208,3 @@ function handleDrop(event, inputId) {
 }
 </script>
 @endsection
-                </div>
-
-                <div class="mb-3">
-                    <label for="categoria" class="form-label">Categoría</label>
-                    <select class="form-select @error('categoria') is-invalid @enderror" id="categoria" name="categoria">
-                        {{-- Options for categories --}}
-                        <option value="1" {{ old('categoria')==1 ? 'selected' : '' }}>Tecnología</option>
-                        <option value="2" {{ old('categoria')==2 ? 'selected' : '' }}>Arte</option>
-                    </select>
-                    @error('categoria') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn brand-btn">Guardar Borrador</button>
-                    <button type="submit" name="enviar_revision" value="1" class="btn btn-outline-secondary">Enviar a Revisión</button>
-                    <a href="{{ url()->previous() }}" class="btn btn-link">Cancelar</a>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-@endsection

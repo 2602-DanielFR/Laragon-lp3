@@ -23,7 +23,7 @@ class ProyectoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Proyecto::with(['emprendedor.user', 'categoria']);
+        $query = Proyecto::with(['user', 'categoria']);
 
         // Filtro por estado
         if ($request->filled('estado')) {
@@ -41,7 +41,7 @@ class ProyectoController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('titulo', 'like', "%{$search}%")
                   ->orWhere('descripcion', 'like', "%{$search}%")
-                  ->orWhereHas('emprendedor.user', function($q) use ($search) {
+                  ->orWhereHas('user', function($q) use ($search) {
                       $q->where('name', 'like', "%{$search}%");
                   });
             });
@@ -58,9 +58,10 @@ class ProyectoController extends Controller
         // Estadísticas
         $stats = [
             'total' => Proyecto::count(),
-            'pendientes' => Proyecto::where('estado', 'pendiente')->count(),
-            'aprobados' => Proyecto::where('estado', 'aprobado')->count(),
+            'pendiente_revision' => Proyecto::where('estado', 'pendiente_revision')->count(),
+            'activos' => Proyecto::where('estado', 'activo')->count(),
             'rechazados' => Proyecto::where('estado', 'rechazado')->count(),
+            'completados' => Proyecto::where('estado', 'completado')->count(),
         ];
 
         return view('admin.proyectos.index', compact('proyectos', 'categorias', 'stats'));
@@ -72,24 +73,12 @@ class ProyectoController extends Controller
     public function show(string $id)
     {
         $proyecto = Proyecto::with([
-            'emprendedor.user',
+            'user',
             'categoria',
-            'donaciones.donante.user'
+            'donaciones'
         ])->findOrFail($id);
 
-        // Calcular estadísticas del proyecto
-        $totalRecaudado = $proyecto->donaciones->sum('monto');
-        $porcentajeRecaudado = $proyecto->meta_financiamiento > 0 
-            ? ($totalRecaudado / $proyecto->meta_financiamiento) * 100 
-            : 0;
-        $totalDonantes = $proyecto->donaciones->count();
-
-        return view('admin.proyectos.show', compact(
-            'proyecto',
-            'totalRecaudado',
-            'porcentajeRecaudado',
-            'totalDonantes'
-        ));
+        return view('admin.proyectos.show', compact('proyecto'));
     }
 
     /**
@@ -99,25 +88,24 @@ class ProyectoController extends Controller
     {
         $proyecto = Proyecto::findOrFail($id);
 
-        // Validar que el proyecto esté pendiente
-        if ($proyecto->estado !== 'pendiente') {
+        // Validar que el proyecto esté en pendiente revisión
+        if ($proyecto->estado !== 'pendiente_revision') {
             return redirect()
                 ->back()
-                ->with('error', 'Solo se pueden aprobar proyectos en estado pendiente.');
+                ->with('error', 'Solo se pueden aprobar proyectos en estado "Pendiente de Revisión".');
         }
 
         try {
             $proyecto->update([
-                'estado' => 'aprobado',
-                'fecha_aprobacion' => now()
+                'estado' => 'activo',
             ]);
 
             // TODO: Enviar notificación al emprendedor (opcional)
-            // Mail::to($proyecto->emprendedor->user->email)->send(new ProyectoAprobado($proyecto));
+            // Mail::to($proyecto->user->email)->send(new ProyectoAprobado($proyecto));
 
             return redirect()
                 ->route('admin.proyectos.show', $proyecto->id)
-                ->with('success', 'Proyecto aprobado exitosamente.');
+                ->with('success', 'Proyecto aprobado exitosamente. Ahora está activo.');
         } catch (\Exception $e) {
             return redirect()
                 ->back()
@@ -132,29 +120,28 @@ class ProyectoController extends Controller
     {
         $proyecto = Proyecto::findOrFail($id);
 
-        // Validar que el proyecto esté pendiente
-        if ($proyecto->estado !== 'pendiente') {
+        // Validar que el proyecto esté en pendiente revisión
+        if ($proyecto->estado !== 'pendiente_revision') {
             return redirect()
                 ->back()
-                ->with('error', 'Solo se pueden rechazar proyectos en estado pendiente.');
+                ->with('error', 'Solo se pueden rechazar proyectos en estado "Pendiente de Revisión".');
         }
 
         $validated = $request->validate([
-            'motivo_rechazo' => 'required|string|max:1000',
+            'razon_rechazo' => 'required|string|max:1000',
         ], [
-            'motivo_rechazo.required' => 'Debes proporcionar un motivo de rechazo.',
-            'motivo_rechazo.max' => 'El motivo no puede exceder 1000 caracteres.',
+            'razon_rechazo.required' => 'Debes proporcionar un motivo de rechazo.',
+            'razon_rechazo.max' => 'El motivo no puede exceder 1000 caracteres.',
         ]);
 
         try {
             $proyecto->update([
                 'estado' => 'rechazado',
-                'motivo_rechazo' => $validated['motivo_rechazo'],
-                'fecha_rechazo' => now()
+                'razon_rechazo' => $validated['razon_rechazo'],
             ]);
 
             // TODO: Enviar notificación al emprendedor (opcional)
-            // Mail::to($proyecto->emprendedor->user->email)->send(new ProyectoRechazado($proyecto));
+            // Mail::to($proyecto->user->email)->send(new ProyectoRechazado($proyecto));
 
             return redirect()
                 ->route('admin.proyectos.index')
@@ -167,30 +154,28 @@ class ProyectoController extends Controller
     }
 
     /**
-     * Revertir estado a pendiente
+     * Revertir estado a pendiente revisión
      */
     public function revertir(string $id)
     {
         $proyecto = Proyecto::findOrFail($id);
 
-        // Solo se puede revertir si está aprobado o rechazado
-        if (!in_array($proyecto->estado, ['aprobado', 'rechazado'])) {
+        // Solo se puede revertir si está rechazado
+        if ($proyecto->estado !== 'rechazado') {
             return redirect()
                 ->back()
-                ->with('error', 'Solo se pueden revertir proyectos aprobados o rechazados.');
+                ->with('error', 'Solo se pueden revertir proyectos rechazados.');
         }
 
         try {
             $proyecto->update([
-                'estado' => 'pendiente',
-                'motivo_rechazo' => null,
-                'fecha_aprobacion' => null,
-                'fecha_rechazo' => null
+                'estado' => 'pendiente_revision',
+                'razon_rechazo' => null,
             ]);
 
             return redirect()
                 ->route('admin.proyectos.show', $proyecto->id)
-                ->with('success', 'El proyecto ha sido revertido a estado pendiente.');
+                ->with('success', 'El proyecto ha sido revertido a estado "Pendiente de Revisión".');
         } catch (\Exception $e) {
             return redirect()
                 ->back()

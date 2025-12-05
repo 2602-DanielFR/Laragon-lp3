@@ -20,7 +20,7 @@ Route::get('/', function () {
 
 // ===== AUTENTICACIÓN =====
 Auth::routes();
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->name('home.dashboard');
 
 // ===== RUTAS PROTEGIDAS (AUTENTICADAS) =====
 Route::middleware('auth')->group(function () {
@@ -32,16 +32,20 @@ Route::middleware('auth')->group(function () {
 
 // ===== RUTAS PÚBLICAS =====
 Route::get('/proyectos', [ProyectoController::class, 'index'])->name('proyectos.index');
-Route::get('/proyectos/{id}', [ProyectoController::class, 'show'])->name('proyectos.show');
 
 // ===== RUTAS EMPRENDEDOR =====
 Route::middleware(['auth', 'verified', 'emprendedor'])->group(function () {
     Route::get('/emprendedor/dashboard', [EmprendedorDashboardController::class, 'index'])->name('emprendedor.dashboard');
+    Route::get('/emprendedor/proyectos/activos', [EmprendedorDashboardController::class, 'proyectosActivos'])->name('emprendedor.proyectos.activos');
     Route::get('/proyectos/create', [ProyectoController::class, 'create'])->name('proyectos.create');
     Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
     Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
     Route::put('/proyectos/{id}', [ProyectoController::class, 'update'])->name('proyectos.update');
+    Route::delete('/proyectos/{id}', [ProyectoController::class, 'destroy'])->name('proyectos.destroy');
 });
+
+// ===== RUTA PÚBLICA - MOSTRAR PROYECTO =====
+Route::get('/proyectos/{id}', [ProyectoController::class, 'show'])->name('proyectos.show');
 
 // ===== RUTAS ADMIN =====
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {

@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('nombre')->unique();
             $table->string('slug')->unique();
             $table->text('descripcion')->nullable();
+            $table->string('icono')->nullable(); // Clase de Font Awesome
+            $table->string('color')->default('#0066cc'); // Color hexadecimal
             $table->timestamps();
         });
     }

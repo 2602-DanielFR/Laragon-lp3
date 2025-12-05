@@ -13,10 +13,8 @@ class DatabaseSeeder extends Seeder
     {
         // Ejecutar seeders en orden
         $this->call([
+            CategoriaSeeder::class,
             UserSeeder::class,
-            // Aquí puedes agregar más seeders después
-            // CategoriaSeeder::class,
-            // ProyectoSeeder::class,
         ]);
     }
 }
