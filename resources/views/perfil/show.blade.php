@@ -4,29 +4,31 @@
 <div class="min-h-screen bg-gray-50 py-12">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header Section -->
-        <div class="bg-white shadow rounded-lg overflow-hidden mb-6">
-            <div class="h-32 bg-gradient-to-r from-secundario to-principal"></div>
-            <div class="px-4 py-5 sm:px-6 relative">
-                <div class="-mt-16 sm:-mt-20 flex justify-center sm:justify-start mb-4">
-                    <img class="h-32 w-32 rounded-full ring-4 ring-white object-cover bg-white" 
-                         src="{{ optional($profile)->foto_perfil ?? asset('images/profile-placeholder.png') }}" 
+        <div class="bg-white shadow-lg rounded-xl overflow-hidden mb-8 border border-gray-100">
+            <div class="h-40 bg-gradient-to-r from-secundario to-principal"></div>
+            <div class="px-6 py-6 sm:px-8 relative">
+                <div class="-mt-20 flex flex-col sm:flex-row items-center sm:items-end mb-6">
+                    <img class="h-36 w-36 rounded-full ring-4 ring-white object-cover bg-white shadow-md mb-4 sm:mb-0 sm:mr-6" 
+                         src="{{ optional($profile)->foto_perfil ? asset('storage/' . $profile->foto_perfil) : asset('images/profile-placeholder.png') }}" 
                          alt="{{ $user->name }}">
-                </div>
-                <div class="text-center sm:text-left sm:flex sm:items-end sm:justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900">{{ $user->name }}</h1>
-                        <div class="mt-1 flex items-center justify-center sm:justify-start text-sm text-gray-500">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $user->role === 'Donante' ? 'bg-principal-100 text-principal-800' : ($user->role === 'Emprendedor' ? 'bg-secundario-100 text-secundario-800' : 'bg-gray-100 text-gray-800') }}">
+                    
+                    <div class="text-center sm:text-left flex-1">
+                        <h1 class="text-3xl font-bold text-gray-900 mb-1">{{ $user->name }}</h1>
+                        <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm text-gray-600">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {{ $user->role === 'Donante' ? 'bg-green-100 text-green-800' : ($user->role === 'Emprendedor' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800') }}">
                                 {{ $user->role ?? 'Usuario' }}
                             </span>
-                            <span class="mx-2">&middot;</span>
-                            <span>Miembro desde {{ $user->created_at->format('d M, Y') }}</span>
+                            <span class="flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                Miembro desde {{ $user->created_at->format('d M, Y') }}
+                            </span>
                         </div>
                     </div>
+
                     @if(Auth::id() === $user->id)
-                    <div class="mt-4 sm:mt-0">
-                        <a href="{{ route('perfil.edit') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-principal">
-                            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <div class="mt-6 sm:mt-0">
+                        <a href="{{ route('perfil.edit') }}" class="inline-flex items-center px-5 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-principal transition-colors">
+                            <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                             </svg>
                             Editar Perfil
@@ -37,45 +39,53 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <!-- Left Column: About & Contact -->
-            <div class="lg:col-span-2 space-y-6">
+        <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <!-- Left Column: About & Role Details -->
+            <div class="lg:col-span-2 space-y-8">
                 <!-- Bio -->
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Sobre mí</h3>
-                    <div class="prose prose-blue text-gray-600">
+                <div class="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <h3 class="text-xl font-bold text-secundario mb-4 pb-2 border-b border-gray-100 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-principal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        Sobre mí
+                    </h3>
+                    <div class="prose prose-blue text-gray-600 leading-relaxed">
                         <p>{{ optional($profile)->biografia_breve ?? 'Este usuario no ha añadido una biografía aún.' }}</p>
                     </div>
                 </div>
 
                 <!-- Role Specific Details -->
                 @if($user->role === 'Emprendedor')
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Detalles de Emprendedor</h3>
-                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
-                        <div class="sm:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Organización / Empresa</dt>
-                            <dd class="mt-1 text-sm text-gray-900 font-semibold">{{ optional($profile)->organizacion ?? 'No especificado' }}</dd>
+                <div class="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <h3 class="text-xl font-bold text-secundario mb-4 pb-2 border-b border-gray-100 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-principal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-6m-6 0H3m0 0h6m6 0v-6m0 6v6"></path></svg>
+                        Detalles de Emprendedor
+                    </h3>
+                    <dl class="grid grid-cols-1 gap-6">
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Organización / Empresa</dt>
+                            <dd class="mt-1 text-lg font-medium text-gray-900">{{ optional($profile)->organizacion ?? 'No especificado' }}</dd>
                         </div>
-                        <div class="sm:col-span-2">
-                            <dt class="text-sm font-medium text-gray-500">Misión / Descripción Personal</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ optional($profile)->descripcion_personal ?? 'No especificado' }}</dd>
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Misión / Descripción Personal</dt>
+                            <dd class="mt-1 text-base text-gray-700 bg-gray-50 p-4 rounded-lg border border-gray-100">{{ optional($profile)->descripcion_personal ?? 'No especificado' }}</dd>
                         </div>
                     </dl>
                 </div>
                 @elseif($user->role === 'Donante')
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Información de Donante</h3>
-                    <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+                <div class="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <h3 class="text-xl font-bold text-secundario mb-4 pb-2 border-b border-gray-100 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-principal" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        Información de Donante
+                    </h3>
+                    <dl class="grid grid-cols-1 gap-6">
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Ubicación</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ optional($profile)->direccion ?? 'No especificado' }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Ubicación</dt>
+                            <dd class="mt-1 text-lg text-gray-900">{{ optional($profile)->direccion ?? 'No especificado' }}</dd>
                         </div>
-                        <!-- Only show phone to owner or admin potentially, usually private -->
                         @if(Auth::id() === $user->id)
                         <div>
-                            <dt class="text-sm font-medium text-gray-500">Teléfono (Privado)</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ optional($profile)->telefono ?? 'No especificado' }}</dd>
+                            <dt class="text-sm font-medium text-gray-500 uppercase tracking-wider">Teléfono (Privado)</dt>
+                            <dd class="mt-1 text-lg text-gray-900 font-mono bg-gray-50 inline-block px-2 py-1 rounded">{{ optional($profile)->telefono ?? 'No especificado' }}</dd>
                         </div>
                         @endif
                     </dl>
@@ -83,24 +93,28 @@
                 @endif
             </div>
 
-            <!-- Right Column: Social & Stats -->
-            <div class="space-y-6">
-                <!-- Contact/Social -->
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Conectar</h3>
-                    <div class="space-y-3">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Email</p>
-                            <a href="mailto:{{ $user->email }}" class="text-sm text-principal hover:underline">{{ $user->email }}</a>
-                        </div>
-                        
+            <!-- Right Column: Contact & Social -->
+            <div class="space-y-8">
+                <!-- Contact Info -->
+                <div class="bg-white shadow-lg rounded-xl p-8 border border-gray-100">
+                    <h3 class="text-lg font-bold text-secundario mb-4 pb-2 border-b border-gray-100">Conectar</h3>
+                    
+                    <div class="mb-6">
+                        <p class="text-sm font-medium text-gray-500 mb-1">Email de contacto</p>
+                        <a href="mailto:{{ $user->email }}" class="flex items-center text-principal hover:text-principal-dark transition-colors font-medium">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            {{ $user->email }}
+                        </a>
+                    </div>
+
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 mb-3">Redes Sociales</p>
                         @if($user->socialLinks->count() > 0)
-                            <div>
-                                <p class="text-sm font-medium text-gray-500 mb-2">Redes Sociales</p>
-                                <div class="flex flex-col space-y-2">
-                                    @foreach($user->socialLinks as $link)
-                                        <a href="{{ $link->url }}" target="_blank" rel="noopener noreferrer" class="flex items-center text-sm text-gray-600 hover:text-principal transition-colors">
-                                            <svg class="h-4 w-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <div class="flex flex-col space-y-3">
+                                @foreach($user->socialLinks as $link)
+                                    <a href="{{ $link->url }}" target="_blank" rel="noopener noreferrer" class="flex items-center p-2 rounded-lg hover:bg-gray-50 text-gray-700 hover:text-principal transition-all group">
+                                        <div class="bg-gray-100 p-2 rounded-full mr-3 group-hover:bg-principal-100 transition-colors">
+                                            <svg class="h-5 w-5 group-hover:text-principal" fill="currentColor" viewBox="0 0 24 24">
                                                 @if(strtolower($link->platform) == 'twitter')
                                                     <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
                                                 @elseif(strtolower($link->platform) == 'facebook')
@@ -117,33 +131,18 @@
                                                     <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-2 16h-2v-6h2v6zm-1-6.891c-.607 0-1.1-.496-1.1-1.109 0-.612.492-1.109 1.1-1.109s1.1.497 1.1 1.109c0 .613-.492 1.109-1.1 1.109zm8 6.891h-1.998v-2.861c0-1.881-2.002-1.722-2.002 0v2.861h-2v-6h2v1.093c.872-1.616 4-1.736 4 1.548v3.359z"/>
                                                 @endif
                                             </svg>
-                                            {{ $link->platform }}
+                                            <span class="font-medium">{{ $link->platform }}</span>
                                         </a>
                                     @endforeach
                                 </div>
                             </div>
                         @else
-                            <p class="text-sm text-gray-500">No hay enlaces de redes sociales.</p>
+                            <div class="text-center py-6 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-500">No hay enlaces de redes sociales.</p>
+                            </div>
                         @endif
                     </div>
                 </div>
-
-                <!-- Stats Placeholder (optional) -->
-                <!--
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Estadísticas</h3>
-                    <div class="grid grid-cols-2 gap-4 text-center">
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl font-bold text-secundario">12</div>
-                            <div class="text-xs text-gray-500">Proyectos</div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded-lg">
-                            <div class="text-2xl font-bold text-principal">85%</div>
-                            <div class="text-xs text-gray-500">Éxito</div>
-                        </div>
-                    </div>
-                </div>
-                -->
             </div>
         </div>
     </div>
