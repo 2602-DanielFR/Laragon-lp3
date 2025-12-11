@@ -22,6 +22,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'email_verified_at',
     ];
 
     /**
@@ -47,6 +48,20 @@ class User extends Authenticatable
         ];
     }
 
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+     public function isDonante(): bool
+    {
+        return $this->role === 'donante';
+    }
+    public function isEmprendedor(): bool
+    {
+        return $this->role === 'emprendedor';
+    }
+
     // Relaciones
     public function donante()
     {
@@ -61,5 +76,10 @@ class User extends Authenticatable
     public function socialLinks()
     {
         return $this->hasMany(SocialLink::class);
+    }
+
+    public function proyectos()
+    {
+        return $this->hasMany(Proyecto::class);
     }
 }

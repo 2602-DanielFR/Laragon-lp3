@@ -24,19 +24,35 @@
 
         <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-6m-6 0H3m0 0h6m6 0v-6m0 6v6"></path>
+            <!-- Proyectos Activos - Clickeable -->
+            <a href="{{ route('emprendedor.proyectos.activos') }}" class="group">
+                <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg hover:border-blue-500 border-2 border-transparent transition-all duration-300 cursor-pointer h-full">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-6m-6 0H3m0 0h6m6 0v-6m0 6v6"></path>
+                            </svg>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm text-gray-500">Proyectos Activos</p>
+                            <p class="text-2xl font-bold text-gray-900">
+                                @php
+                                    $activosCount = App\Models\Proyecto::where('user_id', Auth::id())
+                                        ->where('estado', 'activo')
+                                        ->count();
+                                @endphp
+                                {{ $activosCount }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex items-center text-blue-600 text-sm font-medium">
+                        Ver todos
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm text-gray-500">Proyectos Activos</p>
-                        <p class="text-2xl font-bold text-gray-900">3</p>
-                    </div>
                 </div>
-            </div>
+            </a>
 
             <div class="bg-white rounded-lg shadow-md p-6">
                 <div class="flex items-center">
@@ -114,6 +130,68 @@
                                 <p class="text-sm text-gray-500">Analiza tu progreso</p>
                             </div>
                         </a>
+                    </div>
+                </div>
+
+                <!-- Recently Approved Projects -->
+                <div class="bg-white rounded-lg shadow-md">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-gray-900">Proyectos Aprobados Recientemente</h3>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Últimos 7 días
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            @forelse(App\Models\Proyecto::where('user_id', Auth::id())
+                                ->where('estado', 'activo')
+                                ->whereDate('updated_at', '>=', now()->subDays(7))
+                                ->orderBy('updated_at', 'desc')
+                                ->get() as $proyecto)
+                                
+                                <div class="border-l-4 border-green-500 bg-green-50 p-4 rounded-r-lg hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="flex items-center space-x-2 mb-1">
+                                                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                                </svg>
+                                                <h4 class="font-semibold text-gray-900">{{ $proyecto->titulo }}</h4>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2">{{ Str::limit($proyecto->descripcion_corta, 80) }}</p>
+                                            <div class="flex items-center space-x-4 text-xs text-gray-500">
+                                                <span>📂 {{ $proyecto->categoria->nombre }}</span>
+                                                <span>💰 ${{ number_format($proyecto->objetivo_recaudacion, 2) }}</span>
+                                                <span>📅 Aprobado hace {{ $proyecto->updated_at->diffInDays(now()) }} días</span>
+                                            </div>
+                                        </div>
+                                        <a href="{{ route('proyectos.show', $proyecto->id) }}" 
+                                           class="ml-4 inline-flex items-center px-3 py-1 rounded-lg bg-green-200 text-green-800 text-sm font-medium hover:bg-green-300 transition-colors">
+                                            Ver
+                                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                            </svg>
+                                        </a>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="text-center py-8">
+                                    <svg class="w-12 h-12 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p class="text-gray-500 mb-4">No hay proyectos aprobados recientemente</p>
+                                    <p class="text-sm text-gray-400">Los proyectos aparecerán aquí cuando el administrador los apruebe</p>
+                                </div>
+                            @endforelse
+                        </div>
                     </div>
                 </div>
 
