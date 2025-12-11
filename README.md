@@ -11,7 +11,7 @@ El contexto de la aplicación es una Plataforma de Financiamiento Social (Crowdf
 ## Especificaciones del Proyecto
 
 -   **Backend**: Laravel
--   **Frontend**: Blade, Vite, Bootstrap, Sass
+-   **Frontend**: Blade, Vite, Tailwind CSS v4, Alpine.js
 -   **Base de Datos**: Compatible con MySQL, MariaDB, PostgreSQL, etc. (configurable en `.env`).
 -   **Servidor de Desarrollo**: Se recomienda Laragon, pero es compatible con cualquier entorno que soporte PHP y Node.js.
 
@@ -110,8 +110,14 @@ Siga estos pasos para instalar y ejecutar el proyecto en su entorno de desarroll
     php artisan migrate
     ```
 
-8.  **(Opcional) Ejecutar los seeders:**
-    Si el proyecto tiene seeders для poblar la base de datos con datos de prueba, ejecútelos.
+8.  **Crear enlace simbólico para almacenamiento (¡IMPORTANTE!):**
+    Este comando crea un enlace simbólico desde `public/storage` a `storage/app/public`, permitiendo que las imágenes subidas sean accesibles públicamente. Si las imágenes no se muestran, este es el primer paso a verificar.
+    ```bash
+    php artisan storage:link
+    ```
+
+9.  **(Opcional) Ejecutar los seeders:**
+    Si el proyecto tiene seeders para poblar la base de datos con datos de prueba, ejecútelos.
     ```bash
     php artisan db:seed
     ```
