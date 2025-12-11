@@ -24,10 +24,11 @@ Route::get('/home', [HomeController::class, 'index'])->name('home.dashboard');
 
 // ===== RUTAS PROTEGIDAS (AUTENTICADAS) =====
 Route::middleware('auth')->group(function () {
-    // Perfil - SIN {id}
-    Route::get('/perfil', [PerfilController::class, 'show'])->name('perfil.show');
+    // Perfil
     Route::get('/perfil/editar', [PerfilController::class, 'edit'])->name('perfil.edit');
     Route::put('/perfil/actualizar', [PerfilController::class, 'update'])->name('perfil.update');
+    // Mover show al final para evitar conflicto con editar
+    Route::get('/perfil/{id?}', [PerfilController::class, 'show'])->name('perfil.show');
 });
 
 // ===== RUTAS PÚBLICAS =====

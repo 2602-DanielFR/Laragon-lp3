@@ -9,12 +9,16 @@ use App\Models\User;
 class PerfilController extends Controller
 {
     /**
-     * Display the authenticated user's profile.
-     * NO requiere parámetro, usa auth()->user()
+     * Display the specified resource.
+     * Si no se pasa ID, muestra el perfil del usuario autenticado.
      */
-    public function show()
+    public function show($id = null)
     {
-        $user = Auth::user()->load(['donante', 'emprendedor', 'socialLinks']);
+        if ($id) {
+            $user = User::with(['donante', 'emprendedor', 'socialLinks'])->findOrFail($id);
+        } else {
+            $user = Auth::user()->load(['donante', 'emprendedor', 'socialLinks']);
+        }
 
         $profile = null;
         if ($user->isDonante()) {
