@@ -144,8 +144,8 @@
                                 <input type="radio" 
                                        id="role_donante"
                                        name="role" 
-                                       value="donante"
-                                       {{ old('role') == 'donante' ? 'checked' : '' }}
+                                       value="Donante"
+                                       {{ old('role') == 'Donante' ? 'checked' : '' }}
                                        class="h-4 w-4 text-principal">
                                 <div class="ml-3 flex-1">
                                     <label for="role_donante" class="font-medium text-gray-900 cursor-pointer">
@@ -163,8 +163,8 @@
                                 <input type="radio" 
                                        id="role_emprendedor"
                                        name="role" 
-                                       value="emprendedor"
-                                       {{ old('role') == 'emprendedor' ? 'checked' : '' }}
+                                       value="Emprendedor"
+                                       {{ old('role') == 'Emprendedor' ? 'checked' : '' }}
                                        class="h-4 w-4 text-principal">
                                 <div class="ml-3 flex-1">
                                     <label for="role_emprendedor" class="font-medium text-gray-900 cursor-pointer">

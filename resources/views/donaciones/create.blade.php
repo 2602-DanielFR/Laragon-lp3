@@ -1,97 +1,67 @@
 @extends('layouts.app')
 
 @section('content')
-<style>
-    /* Paleta: principal #f96854, secundario #052d49 */
-    .auth-left { background: #052d49; color: #ffffff; }
-    .btn-login { background: #f96854; border-color: #f96854; color: #ffffff; }
-    .btn-login:hover, .btn-login:focus { background: #e85b48; border-color: #e85b48; }
-    input.form-control:focus { box-shadow: 0 0 0 .2rem rgba(249,104,84,0.15); border-color: #f96854; }
-    .card { border-radius: .75rem; }
-</style>
-
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-9">
-            <div class="card shadow-sm border-0 overflow-hidden">
-                <div class="row g-0">
-                    <div class="col-md-4 d-none d-md-flex align-items-center justify-content-center auth-left p-4">
-                        <div class="text-center">
-                            <h4 class="mb-1">Donar</h4>
-                            <p class="small mb-0">Apoya el proyecto con tu aporte</p>
-                        </div>
-                    </div>
-
-                    <div class="col-12 col-md-8 p-4">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">Donar al Proyecto: Título del Proyecto</h5>
-
-                            <form action="#" method="POST">
-                                @csrf
-
-                                <div class="mb-3">
-                                    <label for="monto" class="form-label">Monto a Donar (S/)</label>
-                                    <div class="input-group input-group-lg">
-                                        <span class="input-group-text">S/</span>
-                                        <input type="number" min="1" step="0.01" class="form-control form-control-lg @error('monto') is-invalid @enderror" id="monto" name="monto" value="{{ old('monto') }}" placeholder="50.00">
-                                    </div>
-                                    @error('monto')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="form-check mb-3">
-                                    <input class="form-check-input" type="checkbox" value="1" id="anonimo" name="anonimo" {{ old('anonimo') ? 'checked' : '' }}>
-                                    <label class="form-check-label ms-2" for="anonimo">Hacer donación anónima</label>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">Método de pago</label>
-                                    <div class="border rounded p-3">
-                                        <p class="mb-1 small text-muted">Aquí irá la integración con la pasarela de pago (Stripe, PayPal, etc.).</p>
-                                        <small class="text-muted">(Campo de prueba en esta vista)</small>
-                                    </div>
-                                </div>
-
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-login btn-lg">Confirmar Donación</button>
-                                    <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">Cancelar</a>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+<div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900">Realizar Donación</h2>
+                    <p class="mt-2 text-gray-600">Estás apoyando al proyecto: <span class="font-semibold text-principal">{{ $proyecto->titulo }}</span></p>
                 </div>
+
+                @if(session('error'))
+                    <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
+                        <p>{{ session('error') }}</p>
+                    </div>
+                @endif
+
+                <form action="{{ route('donaciones.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="proyecto_id" value="{{ $proyecto->id }}">
+
+                    <div class="mb-6">
+                        <label for="monto" class="block text-sm font-medium text-gray-700 mb-2">Monto a Donar (S/)</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">S/</span>
+                            </div>
+                            <input type="number" name="monto" id="monto" class="focus:ring-principal focus:border-principal block w-full pl-8 pr-12 sm:text-lg border-gray-300 rounded-md py-3" placeholder="0.00" min="1" step="0.01" required>
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Monto mínimo: S/ 1.00</p>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Método de Pago</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <label class="relative flex items-center p-4 border rounded-lg cursor-pointer hover:border-principal transition-colors bg-gray-50">
+                                <input type="radio" name="metodo_pago" value="tarjeta" class="h-4 w-4 text-principal focus:ring-principal border-gray-300" checked>
+                                <span class="ml-3 block text-sm font-medium text-gray-700">Tarjeta de Crédito / Débito</span>
+                            </label>
+                            <label class="relative flex items-center p-4 border rounded-lg cursor-pointer hover:border-principal transition-colors bg-gray-50">
+                                <input type="radio" name="metodo_pago" value="paypal" class="h-4 w-4 text-principal focus:ring-principal border-gray-300">
+                                <span class="ml-3 block text-sm font-medium text-gray-700">PayPal</span>
+                            </label>
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 italic">* Esta es una simulación. No se realizará ningún cargo real.</p>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                        <a href="{{ url()->previous() }}" class="text-sm font-medium text-gray-600 hover:text-gray-900">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-base font-medium rounded-md text-white bg-principal hover:bg-principal-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-principal transition-colors">
+                            Confirmar Donación
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="bg-gray-50 px-8 py-4 border-t border-gray-200">
+                <p class="text-xs text-gray-500 text-center">
+                    Tu donación es segura y directa para el emprendedor.
+                </p>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const amountBtns = document.querySelectorAll('.amount-btn');
-    const customInput = document.getElementById('monto');
-    
-    amountBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Remove active class from all buttons
-            amountBtns.forEach(b => {
-                b.classList.remove('border-blue-500', 'bg-blue-50');
-                b.classList.add('border-gray-200');
-            });
-            
-            // Add active class to clicked button
-            this.classList.remove('border-gray-200');
-            this.classList.add('border-blue-500', 'bg-blue-50');
-            
-            // Set input value
-            const amount = this.dataset.amount;
-            if (amount !== 'custom') {
-                customInput.value = amount;
-            } else {
-                customInput.focus();
-            }
-        });
-    });
-});
-</script>
 @endsection

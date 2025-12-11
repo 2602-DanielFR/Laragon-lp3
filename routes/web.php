@@ -72,4 +72,5 @@ Route::middleware(['auth', 'verified', 'donante'])->group(function () {
     Route::get('/donante/donaciones', [DonanteDashboardController::class, 'index'])->name('donante.donaciones.index');
     Route::get('/proyectos/{id}/donar', [DonacionController::class, 'create'])->name('donaciones.create');
     Route::post('/donaciones', [DonacionController::class, 'store'])->name('donaciones.store');
+    Route::get('/donaciones/{id}/exito', [DonacionController::class, 'success'])->name('donaciones.success');
 });

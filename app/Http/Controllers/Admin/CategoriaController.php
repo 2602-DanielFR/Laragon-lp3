@@ -3,14 +3,24 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Categoria; // Added this line
 use Illuminate\Http\Request;
 
 class CategoriaController extends Controller
 {
     /**
+     * Constructor - Middleware de autenticación y rol
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('admin'); // Asumiendo que existe un middleware admin
+    }
+
+    /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $query = Categoria::query();
 
@@ -58,12 +68,12 @@ class CategoriaController extends Controller
             Categoria::create($validated);
             return redirect()
                 ->route('admin.categorias.index')
-                ->with('success','Categoria creada exitosamente.');
+                ->with('success','Categoría creada exitosamente.');
         }catch(\Exception $e){
             return redirect()
                 ->back()
                 ->withInput()
-                ->withErrors(['error' => 'Error al crear la categoria: '.$e->getMessage()]);
+                ->withErrors(['error' => 'Error al crear la categoría: '.$e->getMessage()]);
         }
     }
 
@@ -72,7 +82,8 @@ class CategoriaController extends Controller
      */
     public function show(string $id)
     {
-        //
+        // Not used for categories directly, as per routes
+        abort(404);
     }
 
     /**
@@ -107,12 +118,12 @@ class CategoriaController extends Controller
 
             return redirect()
                 ->route('admin.categorias.index')
-                ->with('success', 'Categoria actualizada exitosamente');
+                ->with('success', 'Categoría actualizada exitosamente');
         }catch(\Exception $e){
             return redirect()
                 ->back()
                 ->withInput()
-                ->withErrors(['error' => 'Error al actualizar la categoria: '.$e->getMessage()]);
+                ->withErrors(['error' => 'Error al actualizar la categoría: '.$e->getMessage()]);
         }
     }
 

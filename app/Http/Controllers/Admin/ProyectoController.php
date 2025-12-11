@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Proyecto;
-use App\Models\Categoria;
+use App\Models\Proyecto; // Ensured this is present
+use App\Models\Categoria; // Ensured this is present
 use Illuminate\Http\Request;
 
 class ProyectoController extends Controller
@@ -58,10 +58,12 @@ class ProyectoController extends Controller
         // Estadísticas
         $stats = [
             'total' => Proyecto::count(),
-            'pendiente_revision' => Proyecto::where('estado', 'pendiente_revision')->count(),
-            'activos' => Proyecto::where('estado', 'activo')->count(),
-            'rechazados' => Proyecto::where('estado', 'rechazado')->count(),
-            'completados' => Proyecto::where('estado', 'completado')->count(),
+            'pendiente_revision' => Proyecto::where('estado', Proyecto::STATUS_PENDING)->count(),
+            'activos' => Proyecto::where('estado', Proyecto::STATUS_ACTIVE)->count(),
+            'rechazados' => Proyecto::where('estado', Proyecto::STATUS_REJECTED)->count(),
+            'completados' => Proyecto::where('estado', Proyecto::STATUS_COMPLETED)->count(),
+            'borradores' => Proyecto::where('estado', Proyecto::STATUS_DRAFT)->count(),
+            'cancelados' => Proyecto::where('estado', Proyecto::STATUS_CANCELLED)->count(),
         ];
 
         return view('admin.proyectos.index', compact('proyectos', 'categorias', 'stats'));
@@ -89,7 +91,7 @@ class ProyectoController extends Controller
         $proyecto = Proyecto::findOrFail($id);
 
         // Validar que el proyecto esté en pendiente revisión
-        if ($proyecto->estado !== 'pendiente_revision') {
+        if ($proyecto->estado !== Proyecto::STATUS_PENDING) {
             return redirect()
                 ->back()
                 ->with('error', 'Solo se pueden aprobar proyectos en estado "Pendiente de Revisión".');
@@ -97,7 +99,8 @@ class ProyectoController extends Controller
 
         try {
             $proyecto->update([
-                'estado' => 'activo',
+                'estado' => Proyecto::STATUS_ACTIVE,
+                'fecha_inicio' => now(), // Activar fecha de inicio al aprobar
             ]);
 
             // TODO: Enviar notificación al emprendedor (opcional)
@@ -121,7 +124,7 @@ class ProyectoController extends Controller
         $proyecto = Proyecto::findOrFail($id);
 
         // Validar que el proyecto esté en pendiente revisión
-        if ($proyecto->estado !== 'pendiente_revision') {
+        if ($proyecto->estado !== Proyecto::STATUS_PENDING) {
             return redirect()
                 ->back()
                 ->with('error', 'Solo se pueden rechazar proyectos en estado "Pendiente de Revisión".');
@@ -136,7 +139,7 @@ class ProyectoController extends Controller
 
         try {
             $proyecto->update([
-                'estado' => 'rechazado',
+                'estado' => Proyecto::STATUS_REJECTED,
                 'razon_rechazo' => $validated['razon_rechazo'],
             ]);
 
@@ -144,7 +147,7 @@ class ProyectoController extends Controller
             // Mail::to($proyecto->user->email)->send(new ProyectoRechazado($proyecto));
 
             return redirect()
-                ->route('admin.proyectos.index')
+                ->route('admin.proyectos.show', $proyecto->id)
                 ->with('success', 'Proyecto rechazado.');
         } catch (\Exception $e) {
             return redirect()
@@ -161,7 +164,7 @@ class ProyectoController extends Controller
         $proyecto = Proyecto::findOrFail($id);
 
         // Solo se puede revertir si está rechazado
-        if ($proyecto->estado !== 'rechazado') {
+        if ($proyecto->estado !== Proyecto::STATUS_REJECTED) {
             return redirect()
                 ->back()
                 ->with('error', 'Solo se pueden revertir proyectos rechazados.');
@@ -169,7 +172,7 @@ class ProyectoController extends Controller
 
         try {
             $proyecto->update([
-                'estado' => 'pendiente_revision',
+                'estado' => Proyecto::STATUS_PENDING,
                 'razon_rechazo' => null,
             ]);
 

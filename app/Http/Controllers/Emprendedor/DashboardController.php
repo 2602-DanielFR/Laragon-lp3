@@ -11,16 +11,43 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        return view('emprendedor.dashboard');
+        $userId = Auth::id();
+
+        $proyectosActivos = Proyecto::where('user_id', $userId)
+            ->where('estado', Proyecto::STATUS_ACTIVE)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $proyectosPendientes = Proyecto::where('user_id', $userId)
+            ->where('estado', Proyecto::STATUS_PENDING)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $proyectosBorradores = Proyecto::where('user_id', $userId)
+            ->where('estado', Proyecto::STATUS_DRAFT)
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        $proyectosRechazados = Proyecto::where('user_id', $userId)
+            ->where('estado', Proyecto::STATUS_REJECTED)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('emprendedor.dashboard', compact(
+            'proyectosActivos', 
+            'proyectosPendientes', 
+            'proyectosBorradores',
+            'proyectosRechazados'
+        ));
     }
 
     /**
-     * Mostrar lista de proyectos activos del emprendedor
+     * Mostrar lista de proyectos activos del emprendedor (Legacy/Specific view)
      */
     public function proyectosActivos()
     {
         $proyectos = Proyecto::where('user_id', Auth::id())
-            ->where('estado', 'activo')
+            ->where('estado', Proyecto::STATUS_ACTIVE)
             ->with('categoria')
             ->orderBy('updated_at', 'desc')
             ->paginate(12);

@@ -23,7 +23,7 @@ class ProyectoController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Proyecto::where('estado', 'activo')->with('categoria', 'user');
+        $query = Proyecto::where('estado', Proyecto::STATUS_ACTIVE)->with('categoria', 'user');
 
         // Filtrar por categoría
         if ($request->has('categoria') && $request->categoria) {
@@ -35,7 +35,7 @@ class ProyectoController extends Controller
             $buscar = $request->buscar;
             $query->where(function ($q) use ($buscar) {
                 $q->where('titulo', 'LIKE', "%{$buscar}%")
-                  ->orWhere('descripcion_corta', 'LIKE', "%{$buscar}%");
+                    ->orWhere('descripcion_corta', 'LIKE', "%{$buscar}%");
             });
         }
 
@@ -95,18 +95,26 @@ class ProyectoController extends Controller
 
             // Asignar datos adicionales
             $validated['user_id'] = auth()->id();
-            $validated['estado'] = 'pendiente_revision';
             $validated['fecha_inicio'] = now();
             $validated['porcentaje_alcanzado'] = 0;
+
+            // Determinar estado basado en el botón presionado
+            if ($request->has('save_draft')) {
+                $validated['estado'] = Proyecto::STATUS_DRAFT;
+                $message = 'Proyecto guardado como borrador.';
+            } else {
+                $validated['estado'] = Proyecto::STATUS_PENDING;
+                $message = 'Proyecto creado y enviado a revisión.';
+            }
 
             // Crear proyecto
             $proyecto = Proyecto::create($validated);
 
             return redirect()->route('emprendedor.dashboard')
-                           ->with('success', 'Proyecto creado exitosamente. Está pendiente de revisión por los administradores.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Error al crear el proyecto: ' . $e->getMessage());
+                ->with('error', 'Error al crear el proyecto: ' . $e->getMessage());
         }
     }
 
@@ -116,11 +124,13 @@ class ProyectoController extends Controller
     public function show(string $id)
     {
         $proyecto = Proyecto::with(['categoria', 'user.emprendedor', 'actualizaciones'])
-                           ->findOrFail($id);
+            ->findOrFail($id);
 
         // Solo mostrar proyectos públicos o si es el propietario/admin
-        if ($proyecto->estado !== 'activo' && 
-            (!auth()->check() || (auth()->id() !== $proyecto->user_id && !auth()->user()->isAdmin()))) {
+        if (
+            $proyecto->estado !== Proyecto::STATUS_ACTIVE &&
+            (!auth()->check() || (auth()->id() !== $proyecto->user_id && !auth()->user()->isAdmin()))
+        ) {
             abort(403, 'No tienes permiso para ver este proyecto');
         }
 
@@ -141,9 +151,15 @@ class ProyectoController extends Controller
             abort(403, 'No tienes permiso para editar este proyecto');
         }
 
-        // No permitir editar proyectos aprobados o activos
-        if (in_array($proyecto->estado, ['activo', 'completado', 'cancelado', 'rechazado'])) {
-            return back()->with('error', 'No puedes editar un proyecto en este estado');
+        // Permitir editar solo borradores, pendientes o rechazados
+        $editableStates = [
+            Proyecto::STATUS_DRAFT,
+            Proyecto::STATUS_PENDING,
+            Proyecto::STATUS_REJECTED
+        ];
+
+        if (!in_array($proyecto->estado, $editableStates)) {
+            return back()->with('error', 'No puedes editar un proyecto que ya está activo, completado o cancelado.');
         }
 
         $categorias = Categoria::all();
@@ -162,8 +178,14 @@ class ProyectoController extends Controller
             abort(403, 'No tienes permiso para actualizar este proyecto');
         }
 
-        // Validar que sea borrador o pendiente
-        if (!in_array($proyecto->estado, ['draft', 'pendiente_revision'])) {
+        // Validar que sea editable
+        $editableStates = [
+            Proyecto::STATUS_DRAFT,
+            Proyecto::STATUS_PENDING,
+            Proyecto::STATUS_REJECTED
+        ];
+
+        if (!in_array($proyecto->estado, $editableStates)) {
             return back()->with('error', 'No puedes editar un proyecto en este estado');
         }
 
@@ -198,14 +220,25 @@ class ProyectoController extends Controller
                 $validated['imagen_banner'] = $request->file('imagen_banner')->store('proyectos/banners', 'public');
             }
 
+            // Determinar estado al actualizar
+            if ($request->has('save_draft')) {
+                $validated['estado'] = Proyecto::STATUS_DRAFT;
+                $message = 'Borrador actualizado.';
+            } else {
+                // Si se envía a revisión (incluso si era rechazado), pasa a pendiente
+                $validated['estado'] = Proyecto::STATUS_PENDING;
+                $validated['razon_rechazo'] = null; // Limpiar razón de rechazo anterior si existe
+                $message = 'Proyecto actualizado y enviado a revisión.';
+            }
+
             // Actualizar proyecto
             $proyecto->update($validated);
 
             return redirect()->route('emprendedor.dashboard')
-                           ->with('success', 'Proyecto actualizado exitosamente');
+                ->with('success', $message);
         } catch (\Exception $e) {
             return back()->withInput()
-                        ->with('error', 'Error al actualizar el proyecto: ' . $e->getMessage());
+                ->with('error', 'Error al actualizar el proyecto: ' . $e->getMessage());
         }
     }
 
@@ -221,9 +254,9 @@ class ProyectoController extends Controller
             abort(403, 'No tienes permiso para eliminar este proyecto');
         }
 
-        // Solo permitir eliminar borradores
-        if ($proyecto->estado !== 'draft') {
-            return back()->with('error', 'Solo puedes eliminar proyectos en estado de borrador');
+        // Solo permitir eliminar borradores o rechazados (opcional, pero seguro)
+        if (!in_array($proyecto->estado, [Proyecto::STATUS_DRAFT, Proyecto::STATUS_REJECTED])) {
+            return back()->with('error', 'Solo puedes eliminar proyectos que son borradores o han sido rechazados.');
         }
 
         try {
@@ -238,7 +271,7 @@ class ProyectoController extends Controller
             $proyecto->delete();
 
             return redirect()->route('emprendedor.dashboard')
-                           ->with('success', 'Proyecto eliminado exitosamente');
+                ->with('success', 'Proyecto eliminado exitosamente');
         } catch (\Exception $e) {
             return back()->with('error', 'Error al eliminar el proyecto: ' . $e->getMessage());
         }

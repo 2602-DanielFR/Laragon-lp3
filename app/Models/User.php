@@ -50,16 +50,17 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return strtolower($this->role) === 'admin';
     }
 
-     public function isDonante(): bool
+    public function isDonante(): bool
     {
-        return $this->role === 'donante';
+        return strtolower($this->role) === 'donante';
     }
+
     public function isEmprendedor(): bool
     {
-        return $this->role === 'emprendedor';
+        return strtolower($this->role) === 'emprendedor';
     }
 
     // Relaciones
