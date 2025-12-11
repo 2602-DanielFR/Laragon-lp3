@@ -11,10 +11,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Ejecutar seeders en orden
         $this->call([
-            CategoriaSeeder::class,
             UserSeeder::class,
+            CategoriaSeeder::class,
+            ProyectoSeeder::class,
+            DonacionSeeder::class,
         ]);
     }
 }
