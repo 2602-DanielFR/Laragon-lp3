@@ -101,9 +101,14 @@ class PerfilController extends Controller
 
         // ===== ACTUALIZAR PERFIL RELACIONADO =====
         $relatedData = [
-            'foto_perfil' => $data['foto_perfil'] ?? null,
             'biografia_breve' => $data['biografia_breve'] ?? null,
         ];
+
+        // Handle Profile Picture Upload
+        if ($request->hasFile('foto_perfil')) {
+            $path = $request->file('foto_perfil')->store('perfiles', 'public');
+            $relatedData['foto_perfil'] = $path;
+        }
 
         if ($user->isDonante()) {
             $relatedData['organizacion'] = $data['organizacion'] ?? null;
