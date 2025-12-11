@@ -21,8 +21,8 @@
             </div>
         @endif
 
-        <form action="{{ route('proyectos.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+            <form action="{{ route('proyectos.store') }}" method="POST">
+                @csrf
 
             <!-- Sección 1: Información Básica -->
             <div class="mb-8 pb-8 border-b border-gray-700">

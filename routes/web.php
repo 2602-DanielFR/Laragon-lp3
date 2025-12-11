@@ -38,6 +38,7 @@ Route::middleware(['auth', 'verified', 'emprendedor'])->group(function () {
     Route::get('/emprendedor/dashboard', [EmprendedorDashboardController::class, 'index'])->name('emprendedor.dashboard');
     Route::get('/emprendedor/proyectos/activos', [EmprendedorDashboardController::class, 'proyectosActivos'])->name('emprendedor.proyectos.activos');
     Route::get('/proyectos/create', [ProyectoController::class, 'create'])->name('proyectos.create');
+    // Route to store a new proyecto (form submits here)
     Route::post('/proyectos', [ProyectoController::class, 'store'])->name('proyectos.store');
     Route::get('/proyectos/{id}/edit', [ProyectoController::class, 'edit'])->name('proyectos.edit');
     Route::put('/proyectos/{id}', [ProyectoController::class, 'update'])->name('proyectos.update');

@@ -1,179 +1,111 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 py-12">
-    <!-- Página de Exploración de Proyectos -->
-    <div class="mb-8">
-        <h1 class="text-4xl font-bold text-white mb-2">Explorar Proyectos</h1>
-        <p class="text-gray-300">Descubre y apoya iniciativas sociales y ambientales que generan impacto</p>
-    </div>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Hero -->
+        <div class="mb-8">
+            <div class="bg-gradient-to-r from-indigo-700 to-pink-600 rounded-lg shadow-lg p-6 text-white">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="text-3xl md:text-4xl font-bold mb-2">Explora Proyectos y Haz Impacto</h1>
+                        <p class="text-indigo-100">Conecta con causas sociales y ambientales que necesitan tu apoyo.</p>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="w-24 h-24 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 12h18M3 17h18"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <!-- Filtros y Búsqueda -->
-    <div class="bg-gray-800 rounded-lg p-6 mb-8">
-        <form method="GET" action="{{ route('proyectos.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <!-- Búsqueda -->
-            <div>
-                <label for="buscar" class="block text-sm font-medium text-gray-300 mb-2">Buscar</label>
-                <input type="text" name="buscar" id="buscar" value="{{ request('buscar') }}"
-                    placeholder="Buscar proyectos..."
-                    class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500">
+        <!-- Quick Stats & Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+            <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <p class="text-sm text-gray-500">Proyectos Activos</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ count($projects ?? []) }}</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <p class="text-sm text-gray-500">Total Recaudado</p>
+                    <p class="text-2xl font-bold text-gray-900">S/{{ number_format(collect($projects ?? [])->sum('recaudado'),2) }}</p>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <p class="text-sm text-gray-500">Donaciones</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ collect($projects ?? [])->sum(function($p){ return $p->donantes_count ?? 0; }) }}</p>
+                </div>
             </div>
 
-            <!-- Categoría -->
-            <div>
-                <label for="categoria" class="block text-sm font-medium text-gray-300 mb-2">Categoría</label>
-                <select name="categoria" id="categoria" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
+            <div class="flex items-center justify-end gap-3">
+                <a href="{{ route('proyectos.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">Crear Proyecto</a>
+                <a href="#filters" class="border border-gray-200 px-3 py-2 rounded-lg text-sm">Filtros</a>
+            </div>
+        </div>
+
+        <!-- Filters & Search -->
+        <div class="mb-6 bg-white rounded-lg shadow p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <input type="text" placeholder="Buscar por título o descripción" class="border rounded-lg px-3 py-2 w-full md:w-96">
+                <select class="border rounded-lg px-3 py-2">
                     <option value="">Todas las categorías</option>
-                    @foreach ($categorias as $cat)
-                        <option value="{{ $cat->id }}" {{ request('categoria') == $cat->id ? 'selected' : '' }}>
-                            {{ $cat->nombre }}
-                        </option>
-                    @endforeach
                 </select>
             </div>
-
-            <!-- Ordenamiento -->
-            <div>
-                <label for="orden" class="block text-sm font-medium text-gray-300 mb-2">Ordenar por</label>
-                <select name="orden" id="orden" class="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-white focus:outline-none focus:border-blue-500">
-                    <option value="reciente" {{ request('orden', 'reciente') == 'reciente' ? 'selected' : '' }}>Más Recientes</option>
-                    <option value="antiguo" {{ request('orden') == 'antiguo' ? 'selected' : '' }}>Más Antiguos</option>
-                    <option value="mas_donaciones" {{ request('orden') == 'mas_donaciones' ? 'selected' : '' }}>Más Donaciones</option>
-                    <option value="cercanos_meta" {{ request('orden') == 'cercanos_meta' ? 'selected' : '' }}>Cercanos a Meta</option>
-                </select>
+            <div class="flex items-center gap-3">
+                <a href="{{ route('proyectos.index') }}" class="text-sm text-gray-600">Limpiar</a>
+                <a href="#" class="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm">Aplicar</a>
             </div>
+        </div>
 
-            <!-- Botón Buscar -->
-            <div class="flex items-end">
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition">
-                    Filtrar
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- Proyectos Grid -->
-    @if ($proyectos->count() > 0)
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            @foreach ($proyectos as $proyecto)
-                <div class="bg-gray-800 rounded-lg overflow-hidden hover:shadow-2xl transition transform hover:scale-105">
-                    <!-- Imagen del proyecto -->
-                    <div class="relative h-48 bg-gray-700 overflow-hidden">
-                        @if ($proyecto->imagen)
-                            <img src="{{ asset('storage/' . $proyecto->imagen) }}" alt="{{ $proyecto->titulo }}"
-                                class="w-full h-full object-cover">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center text-gray-500">
-                                <i class="fas fa-image text-4xl"></i>
-                            </div>
-                        @endif
-
-                        <!-- Badge de categoría -->
-                        <div class="absolute top-3 right-3">
-                            <span class="inline-block bg-blue-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
-                                {{ $proyecto->categoria->nombre }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Contenido -->
-                    <div class="p-4">
-                        <!-- Título -->
-                        <h3 class="text-lg font-bold text-white mb-2 truncate">{{ $proyecto->titulo }}</h3>
-
-                        <!-- Descripción corta -->
-                        <p class="text-gray-400 text-sm mb-4 line-clamp-2">{{ $proyecto->descripcion_corta ?? $proyecto->descripcion }}</p>
-
-                        <!-- Emprendedor -->
-                        <div class="flex items-center mb-4">
-                            <div class="h-8 w-8 rounded-full bg-gray-600 flex items-center justify-center text-white text-xs font-bold mr-2">
-                                {{ strtoupper(substr($proyecto->user->name, 0, 1)) }}
-                            </div>
-                            <span class="text-sm text-gray-400">{{ $proyecto->user->name }}</span>
+        <!-- Projects Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            @forelse($projects ?? [] as $project)
+                @php
+                    $meta = $project->meta ?? 0;
+                    $raised = $project->recaudado ?? ($project->recaudo ?? 0) ;
+                    $pct = $meta > 0 ? min(100, round(($raised / $meta) * 100)) : 0;
+                @endphp
+                <div class="bg-white rounded-lg overflow-hidden shadow hover:shadow-lg transition-shadow flex flex-col">
+                    <img src="{{ $project->imagen_url ?? asset('images/project-placeholder.jpg') }}" alt="{{ $project->titulo ?? 'Proyecto' }}" class="w-full h-44 object-cover">
+                    <div class="p-4 flex-1 flex flex-col">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900">{{ $project->titulo ?? 'Título del Proyecto' }}</h3>
+                            <p class="text-sm text-gray-500 mt-1">{{ $project->descripcion ? Str::limit($project->descripcion, 110) : 'Breve descripción del proyecto.' }}</p>
                         </div>
 
-                        <!-- Progreso -->
-                        <div class="mb-3">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs text-gray-400">
-                                    ${{ number_format($proyecto->monto_actual, 2) }} / ${{ number_format($proyecto->objetivo_recaudacion, 2) }}
-                                </span>
-                                <span class="text-xs font-semibold text-blue-400">{{ round($proyecto->porcentaje_alcanzado) }}%</span>
+                        <div class="mt-4 mb-2">
+                            <div class="flex items-center justify-between text-sm text-gray-600 mb-1">
+                                <span>Meta: <strong>S/{{ number_format($meta,2) }}</strong></span>
+                                <span>{{ $pct }}% alcanzado</span>
                             </div>
-                            <div class="w-full bg-gray-700 rounded-full h-2">
-                                <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full"
-                                    style="width: {{ min($proyecto->porcentaje_alcanzado, 100) }}%"></div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-pink-500" style="width: {{ $pct }}%"></div>
                             </div>
                         </div>
 
-                        <!-- Estadísticas -->
-                        <div class="grid grid-cols-2 gap-2 mb-4 text-xs text-gray-400">
-                            <div class="flex items-center">
-                                <i class="fas fa-users mr-1"></i>
-                                <span>{{ $proyecto->contador_donantes }} Donantes</span>
+                        <div class="mt-auto flex items-center justify-between">
+                            <div class="text-sm text-gray-600">Recaudado: <strong>S/{{ number_format($raised ?? 0,2) }}</strong></div>
+                            <div class="flex items-center gap-2">
+                                <a href="{{ route('proyectos.show', $project->id) }}" class="text-sm text-gray-700 hover:text-indigo-600">Ver</a>
+                                <a href="{{ route('donaciones.create', ['id' => $project->id]) }}" class="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm">Donar</a>
                             </div>
-                            <div class="flex items-center">
-                                <i class="fas fa-hourglass-half mr-1"></i>
-                                <span>{{ $proyecto->diasRestantes() }} días</span>
-                            </div>
-                        </div>
-
-                        <!-- Botón Ver Proyecto -->
-                        <a href="{{ route('proyectos.show', $proyecto->id) }}"
-                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg text-center transition">
-                            Ver Proyecto
-                        </a>
-                    </div>
-                </div>
-            @endforeach
-        </div>
-
-        <!-- Paginación -->
-        <div class="flex justify-center">
-            {{ $proyectos->links() }}
-        </div>
-    @else
-        <div class="text-center py-12">
-            <i class="fas fa-search text-6xl text-gray-600 mb-4"></i>
-            <h3 class="text-2xl font-bold text-white mb-2">No hay proyectos disponibles</h3>
-            <p class="text-gray-400">Intenta con otros filtros o categorías</p>
-        </div>
-    @endif
-</div>
-@endsection
-        <div>
-            {{-- Placeholder for filters (keep logic unchanged) --}}
-            <button class="btn btn-sm btn-outline-secondary">Filtros</button>
-        </div>
-    </div>
-
-    <div class="row gy-4">
-        @forelse($projects ?? [] as $project)
-            <div class="col-sm-6 col-md-4">
-                <div class="card h-100 shadow-sm project-card">
-                    <img src="{{ asset('images/project-placeholder.jpg') }}" class="card-img-top" alt="{{ $project->titulo ?? 'Proyecto' }}">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title">{{ $project->titulo ?? 'Título del Proyecto' }}</h5>
-                        <p class="card-text text-muted small mb-2">{{ $project->descripcion ? Str::limit($project->descripcion, 120) : 'Breve descripción del proyecto.' }}</p>
-                        <div class="mt-auto">
-                            <p class="mb-2 small">Meta: <strong>S/{{ number_format($project->meta ?? 0, 2) }}</strong></p>
-                            <a href="#" class="btn btn-sm btn-primary-brand">Ver Detalles</a>
                         </div>
                     </div>
                 </div>
-            </div>
-        @empty
-            <div class="col-12">
-                <div class="alert alert-info">No hay proyectos disponibles todavía.</div>
-            </div>
-        @endforelse
+            @empty
+                <div class="col-span-3">
+                    <div class="bg-white rounded-lg p-6 text-center">
+                        <h3 class="text-lg font-medium">No hay proyectos disponibles todavía</h3>
+                        <p class="text-sm text-gray-500 mt-2">Vuelve más tarde o crea uno si eres emprendedor.</p>
+                    </div>
+                </div>
+            @endforelse
+        </div>
     </div>
 </div>
 
-<style>
-    .btn-primary-brand{ background: #f96854; color: #fff; border: none; }
-    .btn-primary-brand:hover{ background: #e65b48; color:#fff; }
-    .project-card img{ height:160px; object-fit:cover; }
-    .card { border-radius: .6rem; }
-</style>
 @endsection
